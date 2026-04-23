@@ -3,480 +3,595 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minecraft 小游戏</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <title>Minecraft 冒险世界</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
+      --sky: #5c9fd4;
       --grass: #5ab964;
       --grass-side: #3a7d44;
       --dirt: #8b6914;
-      --stone: #787878;
-      --cobble: #5a5a5a;
+      --stone: #757575;
+      --cobble: #555;
       --wood: #6d4c2f;
-      --leaves: #4a8a3a;
-      --sky: #87CEEB;
-      --coal: #4a4a4a;
-      --iron: #c0c0c0;
-      --gold: #ffd700;
-      --diamond: #4afcff;
-      --redstone: #ff3333;
+      --wood-light: #8b6d4f;
+      --leaves: #3a6a2a;
+      --sand: #d4c458;
+      --water: #3c9eff;
+      --lava: #ff6600;
+      --bedrock: #222;
+      --obsidian: #1a1a2e;
     }
 
     body {
-      font-family: 'Press Start 2P', cursive;
-      background: var(--sky);
-      min-height: 100vh;
+      font-family: 'VT323', cursive;
+      background: #1a1a2e;
       overflow: hidden;
+      cursor: none;
     }
 
-    /* loading screen */
-    #loading {
+    #cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      mix-blend-mode: difference;
+    }
+
+    #game {
       position: fixed;
       inset: 0;
-      background: linear-gradient(to bottom, #000 0%, #1a1a2e 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      transition: opacity 0.5s;
-    }
-
-    #loading.done {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #loading h1 {
-      color: #fff;
-      font-size: 24px;
-      text-shadow: 3px 3px 0 #222;
-      margin-bottom: 30px;
-    }
-
-    .loading-bar {
-      width: 200px;
-      height: 20px;
-      background: #333;
-      border: 3px solid #555;
-    }
-
-    .loading-progress {
-      height: 100%;
-      background: #5ab964;
-      width: 0%;
-      transition: width 0.3s;
-    }
-
-    /* game container */
-    #game {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
+      background: var(--sky);
       overflow: hidden;
     }
 
-    /* hotbar */
+    /* World */
+    #world {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transform-origin: center;
+    }
+
+    .chunk-row {
+      position: absolute;
+      width: 100%;
+      height: 40px;
+      display: flex;
+    }
+
+    .block {
+      width: 40px;
+      height: 40px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .block::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--bg);
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    .block-grass::before {
+      background: linear-gradient(to bottom, var(--grass) 0%, var(--grass) 30%, var(--dirt) 30%);
+    }
+    .block-dirt::before { background: var(--dirt); }
+    .block-stone::before { background: var(--stone); }
+    .block-cobble::before {
+      background: var(--cobble);
+      background-image: radial-gradient(circle at 30% 30%, #666 2px, transparent 2px);
+    }
+    .block-sand::before { background: var(--sand); }
+    .block-water::before { background: var(--water); opacity: 0.7; }
+    .block-lava::before {
+      background: var(--lava);
+      animation: lava-flicker 0.5s infinite;
+    }
+    .block-wood::before {
+      background: linear-gradient(90deg, var(--wood) 0%, var(--wood) 25%, var(--wood-light) 25%, var(--wood-light) 50%, var(--wood) 50%);
+    }
+    .block-leaves::before { background: var(--leaves); opacity: 0.9; }
+    .block-log::before {
+      background: var(--wood);
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 8px, #5a3a1f 8px, #5a3a1f 10px);
+    }
+    .block-coal::before {
+      background: #444;
+      background-image: radial-gradient(circle at 30% 30%, #666 3px, transparent 3px);
+    }
+    .block-iron::before {
+      background: #999;
+      background-image: radial-gradient(circle at 40% 40%, #fff 2px, transparent 2px);
+    }
+    .block-gold::before {
+      background: #da2;
+      background-image: radial-gradient(circle at 40% 40%, #ffec80 3px, transparent 3px);
+    }
+    .block-diamond::before {
+      background: #4afcff;
+      background-image: radial-gradient(circle at 50% 50%, #fff 4px, transparent 4px);
+    }
+    .block-redstone::before { background: #c33; }
+    .block-obsidian::before { background: var(--obsidian); }
+    .block-bedrock::before { background: var(--bedrock); }
+
+    /* 3D sides */
+    .block.with-depth::after {
+      content: '';
+      position: absolute;
+      right: -8px;
+      bottom: -8px;
+      width: 16px;
+      height: 16px;
+      background: inherit;
+      transform: rotate(45deg);
+      opacity: 0.7;
+    }
+
+    /* Player */
+    #player {
+      position: absolute;
+      width: 20px;
+      height: 36px;
+      z-index: 100;
+      transition: transform 0.1s;
+    }
+
+    .player-head {
+      width: 16px;
+      height: 12px;
+      background: #8b6914;
+      margin: 0 auto;
+      border-radius: 2px;
+    }
+
+    .player-body {
+      width: 14px;
+      height: 14px;
+      background: #4aaf6a;
+      margin: -1px auto 0;
+    }
+
+    .player-arm {
+      width: 4px;
+      height: 14px;
+      background: #4aaf6a;
+      position: absolute;
+      top: 13px;
+    }
+    .player-arm.left { left: -4px; }
+    .player-arm.right { right: -4px; }
+
+    .player-leg {
+      width: 5px;
+      height: 12px;
+      background: #3a5a8a;
+      position: absolute;
+      bottom: -2px;
+    }
+    .player-leg.left { left: 1px; }
+    .player-leg.right { right: 1px; }
+
+    /* Elytra */
+    .elytra {
+      position: absolute;
+      width: 24px;
+      height: 16px;
+      background: linear-gradient(to right, #4a4a4a, #6a6a6a, #4a4a4a);
+      border: 2px solid #333;
+      border-radius: 3px 8px 8px 3px;
+      top: 14px;
+      left: -2px;
+      display: none;
+    }
+
+    #player.flying .elytra {
+      display: block;
+      animation: elytra-flap 0.3s infinite;
+    }
+
+    @keyframes elytra-flap {
+      0%, 100% { transform: rotate(-15deg); }
+      50% { transform: rotate(0deg); }
+    }
+
+    /* Mobs */
+    .mob {
+      position: absolute;
+      font-size: 10px;
+      color: #000;
+      background: rgba(255,255,255,0.8);
+      padding: 2px 4px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      z-index: 50;
+    }
+
+    .mob:hover { transform: scale(1.2); }
+    .mob-pig::before { content: '🐷'; font-size: 20px; }
+    .mob-cow::before { content: '🐄'; font-size: 20px; }
+    .mob-chicken::before { content: '🐔'; font-size: 16px; }
+    .mob-sheep::before { content: '🐑'; font-size: 20px; }
+    .mob-horse::before { content: '🐴'; font-size: 20px; }
+    .mob-zombie::before { content: '🧟'; font-size: 20px; }
+    .mob-skeleton::before { content: '💀'; font-size: 20px; }
+    .mob spider { background: #3a3a3a; }
+    .mob-spider::before { content: '🕷️'; font-size: 20px; }
+    .mob-creeper::before { content: '🟩'; font-size: 20px; background: #4a4; }
+
+    /* Particles */
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    /* GUI */
+    #gui {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 500;
+    }
+
     #hotbar {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 5px;
-      background: rgba(0,0,0,0.5);
-      padding: 8px;
-      border-radius: 5px;
-      border: 3px solid #333;
-      z-index: 100;
+      gap: 4px;
+      pointer-events: auto;
     }
 
     .hotbar-slot {
-      width: 50px;
-      height: 50px;
-      background: #4a4a4a;
-      border: 3px solid #2a2a2a;
+      width: 40px;
+      height: 40px;
+      background: rgba(0,0,0,0.6);
+      border: 3px solid #333;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       position: relative;
+      transition: border-color 0.1s;
     }
 
     .hotbar-slot.selected {
       border-color: #fff;
-      box-shadow: 0 0 10px #fff;
     }
 
-    .hotbar-slot .count {
-      position: absolute;
-      bottom: 2px;
-      right: 4px;
+    .hotbar-slot .item {
       font-size: 8px;
       color: #fff;
-    }
-
-    .hotbar-slot .block-icon {
-      width: 30px;
-      height: 30px;
-    }
-
-    /* crosshair */
-    #crosshair {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 20px;
-      height: 20px;
-      pointer-events: none;
-      z-index: 99;
-    }
-
-    #crosshair::before,
-    #crosshair::after {
-      content: '';
       position: absolute;
-      background: #fff;
+      bottom: 2px;
+      right: 3px;
     }
 
-    #crosshair::before {
-      width: 2px;
-      height: 100%;
-      left: 50%;
-      transform: translateX(-50%);
+    .hotbar-slot .icon {
+      font-size: 20px;
     }
 
-    #crosshair::after {
-      width: 100%;
-      height: 2px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    /* world */
-    #world {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 3000px;
-      height: 400px;
-      background: linear-gradient(to bottom, var(--sky) 0%, var(--sky) 60%, var(--grass) 60%);
-    }
-
-    .chunk {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-    }
-
-    /* blocks */
-    .block {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-      border: 2px solid rgba(0,0,0,0.3);
-    }
-
-    .block-grass {
-      background: var(--grass);
-    }
-    .block-grass::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 15px;
-      background: var(--grass-side);
-    }
-
-    .block-dirt { background: var(--dirt); }
-    .block-stone { background: var(--stone); }
-    .block-cobble {
-      background: var(--cobble);
-      background-image: radial-gradient(circle at 30% 30%, #6a6a6a 3px, transparent 3px);
-    }
-    .block-wood {
-      background: var(--wood);
-      background-image: linear-gradient(90deg, #5a3a1f 50%, transparent 50%);
-    }
-    .block-leaves {
-      background: var(--leaves);
-      opacity: 0.9;
-    }
-    .block-coal { background: var(--coal); }
-    .block-iron { background: var(--iron); }
-    .block-gold { background: var(--gold); }
-    .block-diamond { background: var(--diamond); }
-    .block-redstone { background: var(--redstone); }
-    .block-water {
-      background: #3399ff;
-      opacity: 0.7;
-    }
-    .block-lava {
-      background: #ff6600;
-      animation: lava-glow 1s infinite;
-    }
-
-    @keyframes lava-glow {
-      0%, 100% { opacity: 0.8; }
-      50% { opacity: 1; }
-    }
-
-    /* player */
-    #player {
-      position: absolute;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 30px;
-      height: 60px;
-      z-index: 50;
-    }
-
-    .player-head {
-      width: 20px;
-      height: 20px;
-      background: #8b6914;
-      margin: 0 auto;
-      border: 2px solid #5a4010;
-    }
-
-    .player-body {
-      width: 20px;
-      height: 25px;
-      background: #4aaf6a;
-      margin: -2px auto 0;
-      border: 2px solid #2a7a4a;
-    }
-
-    .player-arm {
-      width: 8px;
-      height: 25px;
-      background: #4aaf6a;
-      position: absolute;
-      top: 20px;
-      border: 2px solid #2a7a4a;
-    }
-
-    .player-arm.left { left: -8px; }
-    .player-arm.right { right: -8px; }
-
-    .player-leg {
-      width: 8px;
-      height: 20px;
-      background: #3a5a8a;
-      position: absolute;
-      bottom: 0;
-      border: 2px solid #2a3a5a;
-    }
-
-    .player-leg.left { left: 2px; }
-    .player-leg.right { right: 2px; }
-
-    /* mobs */
-    .mob {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .mob:hover {
-      transform: scale(1.1);
-    }
-
-    .mob-pig {
-      background: #f5a6a6;
-      border-radius: 15px 15px 0 0;
-    }
-
-    .mob-pig::before {
-      content: '👃';
-      font-size: 10px;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .mob-sheep {
-      background: #fff;
-      border-radius: 10px 10px 0 0;
-    }
-
-    .mob-cow {
-      background: #8b4513;
-      border-radius: 10px 10px 0 0;
-    }
-
-    .mob-chicken {
-      background: #fff;
-      border-radius: 50%;
-    }
-
-    /* clouds */
-    .cloud {
-      position: absolute;
-      background: #fff;
-      border-radius: 20px;
-      opacity: 0.8;
-    }
-
-    /* UI */
-    #ui {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.6);
-      padding: 15px;
-      border-radius: 5px;
-      color: #fff;
-      font-size: 10px;
-      z-index: 100;
-      min-width: 150px;
-    }
-
-    #health {
-      color: #ff3333;
-      margin-bottom: 10px;
-    }
-
-    #food {
-      color: #ffaa00;
-    }
-
-    #inventory-btn {
+    #health-food {
       position: fixed;
       top: 20px;
       left: 20px;
-      background: #4a4a4a;
-      color: #fff;
-      padding: 10px 15px;
-      border: 3px solid #2a2a2a;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 10px;
-      z-index: 100;
+      display: flex;
+      gap: 20px;
     }
 
-    /* inventory panel */
-    #inventory-panel {
+    .stat {
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+      width: 150px;
+    }
+
+    .heart {
+      width: 15px;
+      height: 15px;
+      background: #c00;
+      display: inline-block;
+      clip-path: path('M7.5 2.5a2.5 2.5 0 0 1 5 0c0 2.5-2.5 5-2.5 5S5 5 5 2.5a2.5 2.5 0 0 1 2.5-2.5z');
+      transform: scale(0.8);
+    }
+
+    .heart.empty { opacity: 0.3; }
+
+    .food-icon {
+      width: 15px;
+      height: 15px;
+      background: #ea0;
+      display: inline-block;
+      clip-path: path('M7.5 8c0-3-3-3-3-6s3-3 3-6 3 3 3 6-3 3-3 6z');
+      transform: scale(0.8);
+    }
+
+    .food-icon.empty { opacity: 0.3; }
+
+    #xp-bar {
+      position: fixed;
+      top: 60px;
+      left: 20px;
+      width: 150px;
+      height: 8px;
+      background: #333;
+      border: 1px solid #000;
+    }
+
+    #xp {
+      height: 100%;
+      background: linear-gradient(to right, #0af, #08f);
+      width: 0%;
+    }
+
+    #coordinates {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: 16px;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    #block-info {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: 14px;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    #biome {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      color: #fff;
+      font-size: 16px;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    #tooltip {
+      position: fixed;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 5px 10px;
+      font-size: 14px;
+      border-radius: 3px;
+      pointer-events: none;
+      display: none;
+      z-index: 600;
+    }
+
+    /* Inventory */
+    #inventory {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.8);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 200;
+      pointer-events: auto;
+      z-index: 700;
     }
 
-    #inventory-panel.open {
-      display: flex;
-    }
+    #inventory.open { display: flex; }
 
-    .inventory-panel-content {
+    .inv-container {
       background: #c6c6c6;
-      padding: 20px;
+      padding: 10px;
       border: 4px solid #373737;
-      max-width: 90vw;
-      max-height: 90vh;
-      overflow: auto;
     }
 
-    .inventory-title {
+    .inv-title {
       background: #5a5a5a;
       color: #fff;
-      padding: 10px;
-      margin: -20px -20px 20px -20px;
-      font-size: 12px;
+      padding: 5px 10px;
+      margin: -10px -10px 10px -10px;
+      font-size: 18px;
     }
 
-    .inventory-grid {
+    .inv-grid {
       display: grid;
-      grid-template-columns: repeat(9, 50px);
-      gap: 5px;
+      grid-template-columns: repeat(9, 45px);
+      gap: 3px;
     }
 
     .inv-slot {
-      width: 50px;
-      height: 50px;
+      width: 45px;
+      height: 45px;
       background: #8a8a8a;
-      border: 3px solid #373737;
+      border: 2px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
     }
 
-    .inv-slot:hover {
-      border-color: #fff;
-    }
+    .inv-slot:hover { border-color: #fff; }
 
-    /* notifications */
-    #notification {
+    /* Pause menu */
+    #pause {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.8);
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 800;
+    }
+
+    #pause.open { display: flex; }
+
+    .pause-title {
+      font-size: 40px;
       color: #fff;
-      padding: 20px 40px;
-      font-size: 14px;
-      border-radius: 10px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: 300;
+      text-shadow: 3px 3px 0 #000;
     }
 
-    #notification.show {
-      opacity: 1;
-    }
-
-    /* help */
-    #help {
-      position: fixed;
-      bottom: 100px;
-      left: 20px;
+    .pause-btn {
       background: rgba(0,0,0,0.6);
       color: #fff;
-      padding: 10px;
-      font-size: 8px;
-      line-height: 1.8;
+      border: 3px solid #555;
+      padding: 10px 30px;
+      font-family: inherit;
+      font-size: 20px;
+      cursor: pointer;
     }
 
-    /* sound toggle */
-    #sound-toggle {
+    .pause-btn:hover {
+      background: rgba(90,185,100,0.6);
+      border-color: #5ab964;
+    }
+
+    /* Loading */
+    #loading {
       position: fixed;
-      top: 20px;
-      left: 120px;
-      background: #4a4a4a;
+      inset: 0;
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #loading.done { display: none; }
+
+    #loading h1 {
       color: #fff;
-      padding: 10px 15px;
-      border: 3px solid #2a2a2a;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 10px;
-      z-index: 100;
+      font-size: 48px;
+      margin-bottom: 30px;
+      letter-spacing: 5px;
+    }
+
+    .load-bar {
+      width: 300px;
+      height: 20px;
+      background: #333;
+      border: 3px solid #555;
+    }
+
+    #load-progress {
+      height: 100%;
+      background: #5ab964;
+      width: 0%;
+      transition: width 0.2s;
+    }
+
+    #load-text {
+      color: #888;
+      margin-top: 10px;
+    }
+
+    /* Death screen */
+    #death {
+      position: fixed;
+      inset: 0;
+      background: rgba(100,0,0,0.9);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 900;
+    }
+
+    #death.show {
+      display: flex;
+    }
+
+    #death h1 {
+      color: #f00;
+      font-size: 48px;
+      text-shadow: 0 0 10px #f00;
+    }
+
+    /* Messages */
+    #messages {
+      position: fixed;
+      top: 100px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .msg {
+      color: #fff;
+      font-size: 14px;
+      text-shadow: 1px 1px 0 #000;
+      opacity: 0;
+      animation: msg-fade 4s forwards;
+    }
+
+    @keyframes msg-fade {
+      0% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Minimap */
+    #minimap {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 100px;
+      height: 100px;
+      background: rgba(0,0,0,0.6);
+      border: 2px solid #333;
+    }
+
+    .mini-block {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+    }
+
+    #mini-player {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #f00;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
     }
   </style>
 </head>
 <body>
+  <div id="cursor"></div>
+
   <!-- Loading -->
   <div id="loading">
     <h1>MINECRAFT</h1>
-    <div class="loading-bar">
-      <div class="loading-progress" id="progress"></div>
-    </div>
+    <div class="load-bar"><div id="load-progress"></div></div>
+    <div id="load-text">正在生成世界...</div>
   </div>
 
   <!-- Game -->
   <div id="game">
     <div id="world"></div>
+
     <div id="player">
       <div class="player-head"></div>
       <div class="player-body"></div>
@@ -484,203 +599,739 @@
       <div class="player-arm right"></div>
       <div class="player-leg left"></div>
       <div class="player-leg right"></div>
+      <div class="elytra"></div>
     </div>
   </div>
 
-  <!-- Crosshair -->
-  <div id="crosshair"></div>
+  <!-- GUI -->
+  <div id="gui">
+    <div id="health-food">
+      <div class="stat" id="health"></div>
+      <div class="stat" id="food"></div>
+    </div>
+    <div id="xp-bar"><div id="xp"></div></div>
+    <div id="coordinates">X: 0 Y: 0 Z: 0</div>
+    <div id="biome">生物群系: 森林</div>
+    <div id="block-info"></div>
 
-  <!-- UI -->
-  <div id="ui">
-    <div id="health">❤️ 20/20</div>
-    <div id="food">🍖 20/20</div>
+    <div id="hotbar"></div>
+    <div id="minimap"><div id="mini-player"></div></div>
+
+    <div id="messages"></div>
   </div>
 
-  <button id="inventory-btn">🎒 物品栏 [E]</button>
-  <button id="sound-toggle">🔊 声音</button>
-
-  <!-- Hotbar -->
-  <div id="hotbar"></div>
-
-  <!-- Help -->
-  <div id="help">
-    WASD / 箭头 - 移动<br>
-    左键 - 破坏 / 攻击<br>
-    右键 - 放置方块<br>
-    1-9 - 选择物品<br>
-    E - 物品栏
-  </div>
-
-  <!-- Inventory Panel -->
-  <div id="inventory-panel">
-    <div class="inventory-panel-content">
-      <div class="inventory-title">🎒 物品栏</div>
-      <div class="inventory-grid" id="inv-grid"></div>
+  <div id="tooltip"></div>
+  <div id="inventory">
+    <div class="inv-container">
+      <div class="inv-title">🎒 物品栏</div>
+      <div class="inv-grid" id="inv-grid"></div>
     </div>
   </div>
 
-  <!-- Notification -->
-  <div id="notification"></div>
+  <div id="pause">
+    <div class="pause-title">游戏暂停</div>
+    <button class="pause-btn" onclick="resume()">继续游戏</button>
+    <button class="pause-btn" onclick="location.reload()">重新开始</button>
+  </div>
+
+  <div id="death">
+    <h1>你死了!</h1>
+    <button class="pause-btn" onclick="respawn()">重生</button>
+  </div>
 
   <script>
-    // Game state
-    const state = {
-      selectedSlot: 0,
-      health: 20,
-      food: 20,
-      position: { x: 0 },
-      inventory: {
-        grass: 64,
-        dirt: 64,
-        stone: 32,
-        cobble: 16,
-        wood: 32,
-        leaves: 16,
-        coal: 24,
-        iron: 12,
-        gold: 6,
-        diamond: 4,
-        redstone: 16,
-        wood_sword: 1,
-        pickaxe: 1,
-        axe: 1
-      },
-      placedBlocks: [],
-      sound: true
+    // ==================== GAME CONFIG ====================
+    const WORLD_WIDTH = 200;  // chunks
+    const WORLD_DEPTH = 200;
+    const CHUNK_SIZE = 16;
+
+    const BLOCKS = {
+      air: null,
+      grass: { id: 'grass', color: '#5ab964', icon: '🌿' },
+      dirt: { id: 'dirt', color: '#8b6914', icon: '🟤' },
+      stone: { id: 'stone', color: '#757575', icon: '🪨' },
+      cobble: { id: 'cobble', color: '#555', icon: '⬜' },
+      sand: { id: 'sand', color: '#d4c458', icon: '🏖️' },
+      water: { id: 'water', color: '#3c9eff', icon: '💧' },
+      lava: { id: 'lava', color: '#f60', icon: '🔥', danger: true },
+      wood: { id: 'wood', color: '#6d4c2f', icon: '🪵' },
+      log: { id: 'log', color: '#5a3a1f', icon: '🪵' },
+      leaves: { id: 'leaves', color: '#3a6a2a', icon: '🌲' },
+      coal: { id: 'coal', color: '#444', icon: '⬛', ore: true },
+      iron: { id: 'iron', color: '#999', icon: '⚪', ore: true },
+      gold: { id: 'gold', color: '#da2', icon: '🟡', ore: true },
+      diamond: { id: 'diamond', color: '#4afcff', icon: '💎', ore: true },
+      redstone: { id: 'redstone', color: '#c33', icon: '🔴', ore: true },
+      obsidian: { id: 'obsidian', color: '#1a1a2e', icon: '⬛' },
+      bedrock: { id: 'bedrock', color: '#222', icon: '⬛', indestructible: true }
     };
 
-    const blockTypes = [
-      { id: 'grass', name: '草地', icon: 'block-grass' },
-      { id: 'dirt', name: '泥土', icon: 'block-dirt' },
-      { id: 'stone', name: '石头', icon: 'block-stone' },
-      { id: 'cobble', name: '圆石', icon: 'block-cobble' },
-      { id: 'wood', name: '木头', icon: 'block-wood' },
-      { id: 'leaves', name: '树叶', icon: 'block-leaves' },
-      { id: 'coal', name: '煤炭', icon: 'block-coal' },
-      { id: 'iron', name: '铁锭', icon: 'block-iron' },
-      { id: 'gold', name: '金锭', icon: 'block-gold' },
-      { id: 'diamond', name: '钻石', icon: 'block-diamond' },
-      { id: 'redstone', name: '红石', icon: 'block-redstone' }
+    const BIOMES = [
+      { name: '森林', tree: true, grass: true },
+      { name: '平原', tree: false, grass: true },
+      { name: '沙漠', tree: false, grass: false, sand: true },
+      { name: '山地', tree: false, grass: false, stone: true },
+      { name: '丛林', tree: true, grass: true, dense: true },
+      { name: '蘑菇岛', tree: false, grass: false, huge: true }
     ];
 
-    // Simple block types for hotbar
-    const hotbarBlocks = blockTypes.slice(0, 9);
+    const MOBS = [
+      { type: 'pig', name: '猪', health: 10, spawn: ['grass'] },
+      { type: 'cow', name: '牛', health: 10, spawn: ['grass'] },
+      { type: 'chicken', name: '鸡', health: 4, spawn: ['grass'] },
+      { type: 'sheep', name: '羊', health: 8, spawn: ['grass'] },
+      { type: 'horse', name: '马', health: 30, spawn: ['grass'] },
+      { type: 'zombie', name: '僵尸', health: 20, spawn: ['grass'], hostile: true },
+      { type: 'skeleton', name: '骷髅', health: 20, spawn: ['grass'], hostile: true },
+      { type: 'creeper', name: '苦力怕', health: 20, spawn: ['grass'], hostile: true, explosive: true },
+      { type: 'spider', name: '蜘蛛', health: 16, spawn: ['grass', 'jungle'], hostile: true }
+    ];
 
-    // Initialize hotbar
-    function initHotbar() {
+    // ==================== GAME STATE ====================
+    let state = {
+      // Position (block coords)
+      x: 50, y: 100, z: 50,
+      // Camera offset
+      offsetX: 0, offsetY: 0,
+      // Velocity
+      vx: 0, vy: 0, vz: 0,
+      // Stats
+      health: 20, maxHealth: 20,
+      food: 20, maxFood: 20,
+      xp: 0, level: 1,
+      // Status
+      onGround: false,
+      flying: false,
+      elytra: false,
+      sneaking: false,
+      swimming: false,
+      hurt: 0,
+      // Inventory
+      selectedSlot: 0,
+      hotbar: [
+        { id: 'grass', count: 64 },
+        { id: 'dirt', count: 64 },
+        { id: 'stone', count: 32 },
+        { id: 'cobble', count: 16 },
+        { id: 'wood', count: 32 },
+        { id: 'log', count: 16 },
+        { id: 'coal', count: 24 },
+        { id: 'iron', count: 12 },
+        { id: 'diamond', count: 4 }
+      ],
+      inventory: {},
+      // World
+      blocks: new Map(),
+      mobs: [],
+      particles: [],
+      // Input
+      keys: {},
+      mouse: { x: 0, y: 0 },
+      // Game
+      paused: false,
+      dead: false,
+      loaded: false
+    };
+
+    // ==================== NOISE & WORLD GEN ====================
+    // Simple noise function
+    function noise2D(x, y, seed = 0) {
+      const n = Math.sin(x * 12.9898 + y * 78.233 + seed) * 43758.5453;
+      return n - Math.floor(n);
+    }
+
+    function smoothNoise(x, y, seed) {
+      const ix = Math.floor(x), iy = Math.floor(y);
+      const fx = x - ix, fy = y - iy;
+
+      const n00 = noise2D(ix, iy, seed);
+      const n10 = noise2D(ix + 1, iy, seed);
+      const n01 = noise2D(ix, iy + 1, seed);
+      const n11 = noise2D(ix + 1, iy + 1, seed);
+
+      const sx = fx * fx * (3 - 2 * fx);
+      const sy = fy * fy * (3 - 2 * fy);
+
+      return n00 * (1-sx) * (1-sy) + n10 * sx * (1-sy) + n01 * (1-sx) * sy + n11 * sx * sy;
+    }
+
+    function fbm(x, y, octaves = 4, seed = 0) {
+      let value = 0, amplitude = 1, frequency = 1, max = 0;
+      for (let i = 0; i < octaves; i++) {
+        value += smoothNoise(x * frequency, y * frequency, seed + i * 100) * amplitude;
+        max += amplitude;
+        amplitude *= 0.5;
+        frequency *= 2;
+      }
+      return value / max;
+    }
+
+    function getBiome(x, z) {
+      const h = fbm(x * 0.02, z * 0.02, 3, 123);
+      const t = fbm(x * 0.05 + 100, z * 0.05, 2, 456);
+
+      if (t > 0.7) return BIOMES[5]; // mushroom
+      if (h > 0.6 && t > 0.4) return BIOMES[4]; // jungle
+      if (h > 0.5) return BIOMES[0]; // forest
+      if (h > 0.3 && t < 0.3) return BIOMES[3]; // mountain
+      if (h < 0.2 && t > 0.6) return BIOMES[2]; // desert
+      return BIOMES[1]; // plains
+    }
+
+    function getHeight(x, z, biome) {
+      const baseHeight = 20;
+      const variation = biome.tree ? 8 : biome.grass ? 4 : 2;
+      return baseHeight + fbm(x * 0.1, z * 0.1, 3, 42) * variation;
+    }
+
+    // ==================== WORLD GENERATION ====================
+    function generateChunk(cx, cz) {
+      const chunk = [];
+      const biome = getBiome(cx, cz);
+      const height = getHeight(cx, cz, biome);
+
+      // Bedrock layer
+      chunk.push({ x: cx, y: 0, z: cz, type: 'bedrock' });
+
+      // Stone layers
+      for (let y = 1; y < height - 3; y++) {
+        const ore = Math.random();
+        let type = 'stone';
+        if (ore < 0.02) type = 'diamond';
+        else if (ore < 0.05) type = 'gold';
+        else if (ore < 0.1) type = 'iron';
+        else if (ore < 0.15) type = 'coal';
+        else if (ore < 0.02) type = 'redstone';
+
+        chunk.push({ x: cx, y, z: cz, type });
+      }
+
+      // Surface layer
+      let surfaceType = biome.sand ? 'sand' : biome.stone ? 'stone' : 'grass';
+      chunk.push({ x: cx, y: height - 3, z: cz, type: surfaceType });
+
+      // Dirt layer
+      for (let y = height - 2; y < height; y++) {
+        chunk.push({ x: cx, y, z: cz, type: 'dirt' });
+      }
+
+      // Water
+      if (biome.grass || biome.sand) {
+        const waterLevel = 15;
+        if (height < waterLevel) {
+          chunk.push({ x: cx, y: waterLevel, z: cz, type: 'water' });
+        }
+      }
+
+      return chunk;
+    }
+
+    function generateWorld() {
+      setLoadProgress('生成地形...', 10);
+
+      const world = document.getElementById('world');
+      let blockCount = 0;
+
+      // Generate blocks
+      for (let x = 0; x < 100; x++) {
+        for (let z = 0; z < 100; z++) {
+          const biome = getBiome(x, z);
+          const height = getHeight(x, z, biome);
+
+          // Store in map
+          for (let y = 0; y <= height; y++) {
+            let type;
+
+            if (y === 0) {
+              type = 'bedrock';
+            } else if (y >= height - 3) {
+              type = biome.sand ? 'sand' : biome.stone ? 'stone' : 'grass';
+            } else if (y >= height - 5) {
+              type = 'dirt';
+            } else {
+              const ore = Math.random();
+              if (ore < 0.015) type = 'diamond';
+              else if (ore < 0.04) type = 'gold';
+              else if (ore < 0.1) type = 'iron';
+              else if (ore < 0.18) type = 'coal';
+              else if (ore < 0.02) type = 'redstone';
+              else type = 'stone';
+            }
+
+            const key = `${x},${y},${z}`;
+            state.blocks.set(key, type);
+            blockCount++;
+          }
+
+          // Water
+          if (height < 15) {
+            for (let y = height + 1; y <= 15; y++) {
+              state.blocks.set(`${x},${y},${z}`, 'water');
+            }
+          }
+
+          // Trees
+          if (biome.tree && Math.random() < 0.02 && height > 18) {
+            generateTree(x, height + 1, z);
+          }
+        }
+
+        if (x % 10 === 0) {
+          setLoadProgress('生成地形...', 10 + x / 2);
+          yield;
+        }
+      }
+
+      setLoadProgress('放置生物...', 70);
+      yield;
+
+      // Spawn mobs
+      for (let i = 0; i < 30; i++) {
+        const mobType = MOBS[Math.floor(Math.random() * 5)];
+        spawnMob(
+          Math.floor(Math.random() * 80) + 10,
+          20,
+          Math.floor(Math.random() * 80) + 10,
+          mobType
+        );
+      }
+
+      setLoadProgress('完成!', 100);
+
+      // Set player spawn
+      state.x = 50;
+      state.y = getHeight(50, 50) + 5;
+      state.z = 50;
+    }
+
+    function generateTree(x, y, z) {
+      const height = 4 + Math.floor(Math.random() * 3);
+
+      for (let i = 0; i < height; i++) {
+        state.blocks.set(`${x},${y + i},${z}`, 'log');
+      }
+
+      for (let lx = -2; lx <= 2; lx++) {
+        for (let ly = 0; ly <= 2; ly++) {
+          for (let lz = -2; lz <= 2; lz++) {
+            if (Math.abs(lx) + Math.abs(ly) + Math.abs(lz) <= 3) {
+              state.blocks.set(`${x + lx},${y + height + ly},${z + lz}`, 'leaves');
+            }
+          }
+        }
+      }
+    }
+
+    // ==================== MOB AI ====================
+    function spawnMob(x, y, z, type) {
+      const mob = { ...type, x, y, z, health: type.health, hurt: 0 };
+      state.mobs.push(mob);
+    }
+
+    function updateMobs() {
+      const toRemove = [];
+
+      state.mobs.forEach(mob => {
+        // Simple AI - move toward player if hostile
+        if (mob.hostile) {
+          const dx = state.x - mob.x;
+          const dz = state.z - mob.z;
+          const dist = Math.sqrt(dx * dx + dz * dz);
+
+          if (dist < 20 && dist > 3) {
+            mob.x += (dx / dist) * 0.05;
+            mob.z += (dz / dist) * 0.05;
+          }
+
+          // Attack
+          if (dist < 1.5) {
+            damagePlayer(2);
+            showMessage('§c' + mob.name + ' 攻击了你!');
+          }
+        } else {
+          // Passive - random movement
+          if (Math.random() < 0.02) {
+            mob.x += (Math.random() - 0.5) * 2;
+            mob.z += (Math.random() - 0.5) * 2;
+          }
+        }
+
+        // Remove if dead
+        if (mob.health <= 0) {
+          toRemove.push(mob);
+        }
+      });
+
+      toRemove.forEach(mob => {
+        const idx = state.mobs.indexOf(mob);
+        if (idx > -1) state.mobs.splice(idx, 1);
+      });
+    }
+
+    // ==================== RENDER ====================
+    function renderWorld() {
+      const world = document.getElementById('world');
+      const startX = Math.max(0, Math.floor(state.x / 40) - 15);
+      const startY = Math.max(0, Math.floor(state.y / 40) - 10);
+      const startZ = Math.max(0, Math.floor(state.z / 40) - 15);
+      const endX = Math.min(100, Math.ceil(state.x / 40) + 15);
+      const endY = Math.min(50, Math.ceil(state.y / 40) + 10);
+      const endZ = Math.min(100, Math.ceil(state.z / 40) + 15);
+
+      // Clear and rebuild visible area
+      let html = '';
+
+      for (let x = startX; x < endX; x++) {
+        for (let y = startY; y < endY; y++) {
+          for (let z = startZ; z < endZ; z++) {
+            const key = `${x},${y},${z}`;
+            const type = state.blocks.get(key);
+
+            if (type && type !== 'air') {
+              const block = BLOCKS[type];
+              const distance = Math.sqrt(
+                Math.pow(x * 40 - state.x, 2) +
+                Math.pow(y * 40 - state.y, 2) +
+                Math.pow(z * 40 - state.z, 2)
+              );
+
+              if (distance < 800) {
+                const bx = x * 40 - state.x + state.offsetX;
+                const by = -(y * 40 - state.y + state.offsetY);
+                const bz = z * 40 - state.z;
+                const scale = 1 - distance / 1000;
+
+                html += `<div class="block block-${type}" style="left:${bx}px;bottom:${by}px;z-index:${-z};transform:scale(${scale});transform-origin:center;" data-x="${x}" data-y="${y}" data-z="${z}" data-type="${type}"></div>`;
+              }
+            }
+          }
+        }
+      }
+
+      world.innerHTML = html;
+
+      // Re-add player
+      const player = document.getElementById('player');
+      const px = state.offsetX;
+      const py = -state.offsetY;
+      player.style.left = px + 'px';
+      player.style.bottom = py + 'px';
+      player.classList.toggle('flying', state.flying);
+
+      // Render mobs
+      renderMobs();
+
+      // Update particles
+      updateParticles();
+    }
+
+    function renderMobs() {
+      const world = document.getElementById('world');
+      let html = '';
+
+      state.mobs.forEach(mob => {
+        const dx = mob.x * 40 - state.x + state.offsetX;
+        const dy = -(mob.y * 40 - state.y + state.offsetY);
+
+        html += `<div class="mob mob-${mob.type}" style="left:${dx}px;bottom:${dy}px;z-index:${-mob.z + 1};" onclick="attackMob(${state.mobs.indexOf(mob)})">${mob.name}</div>`;
+      });
+
+      // Remove old mobs and add new
+      world.querySelectorAll('.mob').forEach(el => el.remove());
+      world.insertAdjacentHTML('beforeend', html);
+    }
+
+    function attackMob(idx) {
+      const mob = state.mobs[idx];
+      if (mob) {
+        mob.health -= 5;
+        mob.hurt = 10;
+
+        // Knockback
+        mob.x += (mob.x - state.x) * 0.5;
+        mob.z += (mob.z - state.z) * 0.5;
+
+        spawnParticle(mob.x * 40 + state.offsetX, -(mob.y * 40 + state.offsetY), '💥');
+        playSound('hit');
+
+        showMessage('§c你对 ' + mob.name + ' 造成了 5 点伤害!');
+      }
+    }
+
+    // ==================== PHYSICS ====================
+    function updatePhysics() {
+      if (state.dead || state.paused) return;
+
+      const speed = state.sneaking ? 2 : 4;
+      const gravity = state.flying ? -0.1 : 0.5;
+      const jumpPower = state.flying ? 0.3 : 0.8;
+
+      // Horizontal movement
+      if (state.keys['w'] || state.keys['arrowup']) {
+        state.vz -= speed * 0.1;
+      }
+      if (state.keys['s'] || state.keys['arrowdown']) {
+        state.vz += speed * 0.1;
+      }
+      if (state.keys['a'] || state.keys['arrowleft']) {
+        state.vx -= speed * 0.1;
+      }
+      if (state.keys['d'] || state.keys['arrowright']) {
+        state.vx += speed * 0.1;
+      }
+
+      // Jump / Fly
+      if (state.keys[' '] || state.keys['space']) {
+        if (state.onGround) {
+          state.vy = jumpPower;
+          state.onGround = false;
+        } else if (state.flying) {
+          state.vy = jumpPower;
+        }
+      }
+
+      // Elytra flying
+      if (state.elytra && state.keys[' ']) {
+        state.flying = true;
+        state.vy = -0.2;
+      }
+
+      // Descend
+      if (state.keys['shift']) {
+        if (state.flying) state.vy = -0.3;
+        else state.sneaking = true;
+      } else {
+        state.sneaking = false;
+      }
+
+      // Apply gravity
+      if (!state.onGround) {
+        state.vy -= gravity;
+      }
+
+      // Friction
+      state.vx *= 0.8;
+      state.vz *= 0.8;
+      if (state.onGround || state.flying) state.vy *= 0.9;
+
+      // Apply velocity
+      state.x += state.vx;
+      state.y += state.vy;
+      state.z += state.vz;
+
+      // World bounds
+      state.x = Math.max(1, Math.min(99, state.x));
+      state.z = Math.max(1, Math.min(99, state.z));
+
+      // Ground collision
+      const groundY = getGroundLevel(state.x, state.z);
+      if (state.y < groundY + 1.5) {
+        state.y = groundY + 1.5;
+        state.vy = 0;
+        state.onGround = true;
+        state.flying = false;
+      } else {
+        state.onGround = false;
+      }
+
+      // Water check
+      const inWater = state.blocks.get(`${Math.floor(state.x)},${Math.floor(state.y)},${Math.floor(state.z)}`) === 'water';
+      if (inWater) {
+        state.swimming = true;
+        state.vy *= 0.5;
+      } else {
+        state.swimming = false;
+      }
+
+      // Lava damage
+      const inLava = state.blocks.get(`${Math.floor(state.x)},${Math.floor(state.y)},${Math.floor(state.z)}`) === 'lava';
+      if (inLava) {
+        damagePlayer(2);
+      }
+
+      // Update camera position (center player)
+      state.offsetX = 0;
+      state.offsetY = state.y - 10;
+    }
+
+    function getGroundLevel(x, z) {
+      for (let y = 40; y >= 0; y--) {
+        const key = `${Math.floor(x / 40)},${y},${Math.floor(z / 40)}`;
+        const type = state.blocks.get(key);
+        if (type && type !== 'air' && type !== 'water' && type !== 'leaves') {
+          return y * 40 / 40 + 1;
+        }
+      }
+      return 1;
+    }
+
+    // ==================== PLAYER ====================
+    function damagePlayer(amount) {
+      state.health -= amount;
+      state.hurt = 20;
+
+      if (state.health <= 0) {
+        state.health = 0;
+        state.dead = true;
+        document.getElementById('death').classList.add('show');
+      }
+
+      updateHealthFood();
+    }
+
+    function respawn() {
+      state.health = 20;
+      state.food = 20;
+      state.x = 50;
+      state.y = 25;
+      state.z = 50;
+      state.dead = false;
+      state.vx = state.vy = state.vz = 0;
+      document.getElementById('death').classList.remove('show');
+    }
+
+    function updateHealthFood() {
+      let html = '';
+      for (let i = 0; i < 10; i++) {
+        html += `<div class="heart ${i < state.health / 2 ? '' : 'empty'}"></div>`;
+      }
+      document.getElementById('health').innerHTML = html;
+
+      html = '';
+      for (let i = 0; i < 10; i++) {
+        html += `<div class="food-icon ${i < state.food / 2 ? '' : 'empty'}"></div>`;
+      }
+      document.getElementById('food').innerHTML = html;
+
+      document.getElementById('xp').style.width = (state.xp / (state.level * 100)) * 100 + '%';
+      document.getElementById('coordinates').textContent = `X: ${Math.floor(state.x)} Y: ${Math.floor(state.y)} Z: ${Math.floor(state.z)}`;
+    }
+
+    // ==================== INVENTORY ====================
+    function initInventory() {
       const hotbar = document.getElementById('hotbar');
-      hotbarBlocks.forEach((block, i) => {
+      hotbar.innerHTML = '';
+
+      state.hotbar.forEach((item, i) => {
         const slot = document.createElement('div');
         slot.className = 'hotbar-slot' + (i === 0 ? ' selected' : '');
         slot.innerHTML = `
-          <div class="block-icon ${block.icon}"></div>
-          <span class="count">${state.inventory[block.id] || 0}</span>
+          <span class="icon">${BLOCKS[item.id].icon}</span>
+          <span class="item">${item.count}</span>
         `;
         slot.onclick = () => selectSlot(i);
-        slot.dataset.block = block.id;
         hotbar.appendChild(slot);
       });
+
+      // Full inventory
+      const inv = document.getElementById('inv-grid');
+      inv.innerHTML = '';
+
+      const items = [];
+      state.hotbar.forEach(item => {
+        if (item.count > 0) items.push(item);
+      });
+
+      Object.keys(state.inventory).forEach(id => {
+        if (state.inventory[id] > 0) items.push({ id, count: state.inventory[id] });
+      });
+
+      for (let i = 0; i < 27; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'inv-slot';
+        if (items[i]) {
+          slot.textContent = BLOCKS[items[i].id].icon;
+          slot.title = items[i].id + ': ' + items[i].count;
+        }
+        inv.appendChild(slot);
+      }
     }
 
-    function selectSlot(index) {
-      state.selectedSlot = index;
-      document.querySelectorAll('.hotbar-slot').forEach((slot, i) => {
-        slot.classList.toggle('selected', i === index);
+    function selectSlot(i) {
+      state.selectedSlot = i;
+      document.querySelectorAll('.hotbar-slot').forEach((slot, idx) => {
+        slot.classList.toggle('selected', idx === i);
       });
     }
 
-    // Generate world
-    function generateWorld() {
-      const world = document.getElementById('world');
-      const blocks = [];
+    // ==================== INTERACTION ====================
+    document.addEventListener('mousedown', e => {
+      if (state.dead || state.paused) return;
 
-      // Ground layers
-      for (let x = 0; x < 60; x++) {
-        // Grass layer
-        blocks.push({ x: x * 50, y: 350, type: 'grass' });
+      const game = document.getElementById('game');
+      const rect = game.getBoundingClientRect();
+      const mx = state.x + state.offsetX + (e.clientX - rect.width / 2);
+      const my = state.y - state.offsetY - (e.clientY - rect.height / 2);
 
-        // Dirt layer (2 blocks)
-        blocks.push({ x: x * 50, y: 300, type: 'dirt' });
-        blocks.push({ x: x * 50, y: 250, type: 'dirt' });
-
-        // Stone layer
-        blocks.push({ x: x * 50, y: 200, type: 'stone' });
-        blocks.push({ x: x * 50, y: 150, type: 'stone' });
-        blocks.push({ x: x * 50, y: 100, type: 'stone' });
-
-        // Cave ore generation
-        if (Math.random() < 0.1) {
-          blocks.push({ x: x * 50, y: 100, type: 'coal' });
+      if (e.button === 0) {
+        // Left click - break / attack
+        const target = document.elementFromPoint(e.clientX, e.clientY);
+        if (target && target.classList.contains('mob')) {
+          // Attack mob
+          return;
         }
-        if (Math.random() < 0.05) {
-          blocks.push({ x: x * 50, y: 100, type: 'iron' });
-        }
-        if (Math.random() < 0.02) {
-          blocks.push({ x: x * 50, y: 100, type: 'diamond' });
-        }
-      }
 
-      // Trees
-      const treePositions = [5, 15, 25, 35, 50];
-      treePositions.forEach(tx => {
-        // Tree trunk
-        for (let h = 0; h < 4; h++) {
-          blocks.push({ x: tx * 50, y: 350 - (h + 1) * 50, type: 'wood' });
-        }
-        // Leaves
-        for (let lx = -1; lx <= 1; lx++) {
-          for (let ly = 0; ly <= 1; ly++) {
-            blocks.push({ x: (tx + lx) * 50, y: 350 - (4 + ly) * 50, type: 'leaves' });
+        // Break block
+        // (simplified - in real game would use raycasting)
+      } else if (e.button === 2) {
+        // Right click - place
+        const bx = Math.floor(state.x / 40);
+        const by = Math.floor(state.y / 40);
+        const bz = Math.floor(state.z / 40) + 3;
+
+        const item = state.hotbar[state.selectedSlot];
+        if (item && item.count > 0) {
+          const key = `${bx},${by},${bz}`;
+          if (!state.blocks.has(key)) {
+            state.blocks.set(key, item.id);
+            item.count--;
+
+            spawnParticle(bx * 40 + state.offsetX, -(by * 40 + state.offsetY), BLOCKS[item.id].icon);
+            playSound('place');
           }
         }
-        blocks.push({ x: tx * 50, y: 350 - 5 * 50, type: 'leaves' });
-      });
+      }
+    });
 
-      // Clouds
-      for (let i = 0; i < 8; i++) {
-        const cloud = document.createElement('div');
-        cloud.className = 'cloud';
-        cloud.style.left = (Math.random() * 2000) + 'px';
-        cloud.style.top = (50 + Math.random() * 100) + 'px';
-        cloud.style.width = (80 + Math.random() * 100) + 'px';
-        cloud.style.height = (30 + Math.random() * 20) + 'px';
-        world.appendChild(cloud);
+    document.addEventListener('keydown', e => {
+      state.keys[e.key.toLowerCase()] = true;
+
+      if (e.key >= '1' && e.key <= '9') {
+        selectSlot(parseInt(e.key) - 1);
       }
 
-      // Spawn mobs
-      const mobTypes = ['mob-pig', 'mob-sheep', 'mob-cow'];
-      const mobNames = ['猪', '羊', '牛'];
-      for (let i = 0; i < 5; i++) {
-        const mob = document.createElement('div');
-        const type = Math.floor(Math.random() * mobTypes.length);
-        mob.className = 'mob ' + mobTypes[type];
-        mob.style.left = (200 + i * 300) + 'px';
-        mob.style.bottom = '100px';
-        mob.textContent = mobNames[type];
-        mob.title = '点击喂食';
-        mob.onclick = () => {
-          feedMob(mob);
-        };
-        world.appendChild(mob);
+      if (e.key === 'e') {
+        document.getElementById('inventory').classList.toggle('open');
       }
 
-      // Render blocks
-      blocks.forEach(b => {
-        const el = document.createElement('div');
-        el.className = `block block-${b.type}`;
-        el.style.left = b.x + 'px';
-        el.style.bottom = b.y + 'px';
-        el.dataset.type = b.type;
-        el.dataset.x = b.x;
-        el.dataset.y = b.y;
-        world.appendChild(el);
-      });
+      if (e.key === 'Escape') {
+        togglePause();
+      }
+    });
+
+    document.addEventListener('keyup', e => {
+      state.keys[e.key.toLowerCase()] = false;
+    });
+
+    document.addEventListener('mousemove', e => {
+      state.mouse.x = e.clientX;
+      state.mouse.y = e.clientY;
+      document.getElementById('cursor').style.left = e.clientX + 'px';
+      document.getElementById('cursor').style.top = e.clientY + 'px';
+    });
+
+    function togglePause() {
+      state.paused = !state.paused;
+      document.getElementById('pause').classList.toggle('open', state.paused);
     }
 
-    // Simple sound generator
-    function playSound(type) {
-      if (!state.sound) return;
+    function resume() {
+      state.paused = false;
+      document.getElementById('pause').classList.remove('open');
+    }
 
+    // ==================== SOUND ====================
+    function playSound(type) {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -689,173 +1340,111 @@
       gain.connect(ctx.destination);
 
       const sounds = {
-        break: { freq: 200, dur: 0.1 },
+        hit: { freq: 200, dur: 0.1 },
         place: { freq: 300, dur: 0.15 },
-        walk: { freq: 100, dur: 0.05 },
-        hit: { freq: 150, dur: 0.1 },
+        break: { freq: 150, dur: 0.1 },
         eat: { freq: 400, dur: 0.2 }
       };
 
       const s = sounds[type] || sounds.place;
       osc.frequency.value = s.freq;
       osc.type = 'square';
-
       gain.gain.setValueAtTime(0.1, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + s.dur);
-
       osc.start();
       osc.stop(ctx.currentTime + s.dur);
     }
 
-    // Feed mob
-    function feedMob(mob) {
-      showNotification('🐄  yummy!');
-      playSound('eat');
-      state.food = Math.min(20, state.food + 2);
-      updateUI();
+    // ==================== PARTICLES ====================
+    function spawnParticle(x, y, emoji) {
+      const particle = {
+        x, y, z: 0,
+        vx: (Math.random() - 0.5) * 2,
+        vy: Math.random() * 2,
+        life: 30,
+        emoji
+      };
+      state.particles.push(particle);
     }
 
-    // Show notification
-    function showNotification(text) {
-      const notif = document.getElementById('notification');
-      notif.textContent = text;
-      notif.classList.add('show');
-      setTimeout(() => notif.classList.remove('show'), 1500);
-    }
+    function updateParticles() {
+      const world = document.getElementById('world');
 
-    // Update UI
-    function updateUI() {
-      document.getElementById('health').textContent = '❤️ ' + state.health + '/20';
-      document.getElementById('food').textContent = '🍖 ' + state.food + '/20';
+      world.querySelectorAll('.particle').forEach(p => p.remove());
 
-      document.querySelectorAll('.hotbar-slot').forEach((slot, i) => {
-        const block = hotbarBlocks[i];
-        const count = state.inventory[block.id] || 0;
-        slot.querySelector('.count').textContent = count;
+      state.particles = state.particles.filter(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy -= 0.1;
+        p.life--;
+
+        if (p.life > 0) {
+          const el = document.createElement('div');
+          el.className = 'particle';
+          el.textContent = p.emoji;
+          el.style.left = p.x + 'px';
+          el.style.bottom = p.y + 'px';
+          el.style.zIndex = 1000;
+          world.appendChild(el);
+          return true;
+        }
+        return false;
       });
     }
 
-    // Player movement
-    let keys = {};
-    let worldX = 0;
+    // ==================== UI ====================
+    function showMessage(text) {
+      const msgs = document.getElementById('messages');
+      const msg = document.createElement('div');
+      msg.className = 'msg';
+      msg.textContent = text;
+      msgs.appendChild(msg);
 
-    document.addEventListener('keydown', e => {
-      keys[e.key.toLowerCase()] = true;
+      setTimeout(() => msg.remove(), 4000);
+    }
 
-      if (e.key >= '1' && e.key <= '9') {
-        selectSlot(parseInt(e.key) - 1);
+    function setLoadProgress(text, percent) {
+      document.getElementById('load-progress').style.width = percent + '%';
+      document.getElementById('load-text').textContent = text;
+    }
+
+    // ==================== GAME LOOP ====================
+    function* generateAsync() {
+      while (true) {
+        if (!state.paused && !state.dead && state.loaded) {
+          updatePhysics();
+          updateMobs();
+          renderWorld();
+          updateHealthFood();
+        }
+        yield;
       }
-
-      if (e.key.toLowerCase() === 'e') {
-        document.getElementById('inventory-panel').classList.toggle('open');
-      }
-    });
-
-    document.addEventListener('keyup', e => {
-      keys[e.key.toLowerCase()] = false;
-    });
+    }
 
     function gameLoop() {
-      const player = document.getElementById('player');
-      const speed = 3;
-
-      if (keys['a'] || keys['arrowleft']) {
-        worldX = Math.max(0, worldX - speed);
-        player.style.transform = 'translateX(-50%) scaleX(-1)';
+      if (state.loaded) {
+        updatePhysics();
+        updateMobs();
+        renderWorld();
+        updateHealthFood();
       }
-      if (keys['d'] || keys['arrowright']) {
-        worldX = Math.min(2500, worldX + speed);
-        player.style.transform = 'translateX(-50%)';
-      }
-
-      document.getElementById('world').style.transform = `translateX(${-worldX}px)`;
-
-      // Auto hunger
-      if (state.food > 0) {
-        state.food = Math.max(0, state.food - 0.01);
-      }
-
-      updateUI();
       requestAnimationFrame(gameLoop);
     }
 
-    // Click handling - break/place blocks
-    document.getElementById('game').addEventListener('click', e => {
-      if (e.target.classList.contains('block')) {
-        const type = e.target.dataset.type;
-        state.inventory[type] = (state.inventory[type] || 0) + 1;
-        e.target.remove();
-        playSound('break');
-        showNotification('获得 ' + type);
-        updateUI();
-      }
-    });
-
-    // Right click to place
-    document.getElementById('game').addEventListener('contextmenu', e => {
-      e.preventDefault();
-
-      const block = hotbarBlocks[state.selectedSlot];
-      if (state.inventory[block.id] > 0) {
-        const rect = document.getElementById('game').getBoundingClientRect();
-        const x = Math.floor((e.clientX - rect.left + worldX) / 50) * 50;
-        const y = Math.floor((rect.height - e.clientY + rect.top) / 50) * 50;
-
-        if (y > 50 && x > 0) {
-          const el = document.createElement('div');
-          el.className = `block block-${block.id}`;
-          el.style.left = x + 'px';
-          el.style.bottom = y + 'px';
-          el.dataset.type = block.id;
-          el.dataset.x = x;
-          el.dataset.y = y;
-
-          document.getElementById('world').appendChild(el);
-          state.inventory[block.id]--;
-          playSound('place');
-          updateUI();
-        }
-      }
-    });
-
-    // Inventory panel close
-    document.getElementById('inventory-panel').addEventListener('click', e => {
-      if (e.target.id === 'inventory-panel') {
-        e.target.classList.remove('open');
-      }
-    });
-
-    // Inventory button
-    document.getElementById('inventory-btn').onclick = () => {
-      document.getElementById('inventory-panel').classList.toggle('open');
-    };
-
-    // Sound toggle
-    document.getElementById('sound-toggle').onclick = () => {
-      state.sound = !state.sound;
-      document.getElementById('sound-toggle').textContent = state.sound ? '🔊 声音' : '🔇 静音';
-    };
-
-    // Initialize
+    // ==================== INIT ====================
     function init() {
-      const progress = document.getElementById('progress');
-      let p = 0;
+      setLoadProgress('初始化...', 5);
 
-      const interval = setInterval(() => {
-        p += 10;
-        progress.style.width = p + '%';
+      // Generate world
+      generateWorld();
 
-        if (p >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            document.getElementById('loading').classList.add('done');
-            generateWorld();
-            initHotbar();
-            updateUI();
-            gameLoop();
-          }, 500);
-        }
-      }, 100);
+      setTimeout(() => {
+        document.getElementById('loading').classList.add('done');
+        state.loaded = true;
+        initInventory();
+        showMessage('欢迎来到 Minecraft! ��用 WASD 移动, 空格跳跃, 右键放置方块');
+        gameLoop();
+      }, 1500);
     }
 
     init();

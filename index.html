@@ -485,9 +485,9 @@
   </div>
 
   <!-- Menu -->
-  <div id="menu" class="hidden">
-    <div class="menu-title">游戏暂停</div>
-    <button class="menu-btn" onclick="startGame()">继续游戏</button>
+  <div id="menu">
+    <div class="menu-title">MINECRAFT</div>
+    <button class="menu-btn" onclick="startGame()">开始游戏</button>
     <button class="menu-btn" onclick="restart()">重新开始</button>
     <div class="controls-info">
       WASD - 移动 | 空格 - 跳跃 | Shift - 潜行/俯冲<br>
@@ -921,7 +921,11 @@
 
       if (e.key >= '1' && e.key <= '9') selectSlot(parseInt(e.key) - 1);
       if (e.key.toLowerCase() === 'e') document.getElementById('inventory').classList.toggle('open');
-      if (e.key === 'Escape') togglePause();
+      if (e.key === 'Escape') {
+        if (document.getElementById('menu').style.display === 'none') {
+          togglePause();
+        }
+      }
     });
 
     document.addEventListener('keyup', e => {
@@ -962,8 +966,7 @@
     }
 
     function startGame() {
-      state.paused = false;
-      document.getElementById('menu').classList.add('hidden');
+      document.getElementById('menu').style.display = 'none';
     }
 
     function restart() {

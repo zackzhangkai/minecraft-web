@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft 风格网站</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --grass-dark: #3a7d44;
+      --grass-light: #5ab964;
+      --dirt: #8b6914;
+      --stone: #787878;
+      --wood: #6d4c2f;
+      --wood-light: #8b6d4f;
+      --sky: #87CEEB;
+      --cloud: #ffffff;
+      --pig: #f5a6a6;
+      --creeper: #64c144;
+      --zombie: #4aaf6a;
+    }
+
+    body {
+      font-family: 'Press Start 2P', cursive, monospace;
+      background: linear-gradient(to bottom, var(--sky) 0%, var(--sky) 50%, var(--grass-light) 50%, var(--grass-dark) 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    h1 {
+      font-size: 32px;
+      color: #fff;
+      text-shadow: 4px 4px 0 #333, -2px -2px 0 #888;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #ffd700;
+      text-shadow: 2px 2px 0 #333;
+    }
+
+    .pixel-box {
+      background: linear-gradient(135deg, #8b8b8b 0%, #6b6b6b 50%, #5b5b5b 100%);
+      border: 4px solid #3d3d3d;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 8px 8px 0 rgba(0,0,0,0.4);
+    }
+
+    .pixel-box-title {
+      background: #5c5c5c;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 14px;
+      display: inline-block;
+      margin: -30px 0 20px -20px;
+      border: 4px solid #3d3d3d;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .block-item {
+      background: linear-gradient(135deg, #8b8b8b 0%, #6b6b6b 100%);
+      border: 4px solid #3d3d3d;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .block-item:hover {
+      transform: translateY(-4px);
+    }
+
+    .block-item:active {
+      transform: translateY(0);
+    }
+
+    .block-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 10px;
+      border: 2px solid #3d3d3d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #333;
+    }
+
+    .block-grass {
+      background: linear-gradient(to bottom, var(--grass-light) 0%, var(--grass-light) 25%, var(--dirt) 25%, var(--dirt) 100%);
+    }
+
+    .block-dirt {
+      background: var(--dirt);
+    }
+
+    .block-stone {
+      background: var(--stone);
+      background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, #686868 10px, #686868 20px);
+    }
+
+    .block-wood {
+      background: linear-gradient(to right, var(--wood) 0%, var(--wood-light) 50%, var(--wood) 100%);
+    }
+
+    .block-coal {
+      background: #4a4a4a;
+      background-image: radial-gradient(circle at 30% 30%, #6a6a6a 2px, transparent 2px),
+                  radial-gradient(circle at 70% 60%, #6a6a6a 3px, transparent 3px),
+                  radial-gradient(circle at 50% 80%, #6a6a6a 2px, transparent 2px);
+    }
+
+    .block-iron {
+      background: #c0c0c0;
+      background-image: radial-gradient(circle at 30% 30%, #e8e8e8 3px, transparent 3px),
+                  radial-gradient(circle at 60% 50%, #e8e8e8 2px, transparent 2px);
+    }
+
+    .block-gold {
+      background: #ffd700;
+      background-image: radial-gradient(circle at 40% 40%, #ffec80 4px, transparent 4px);
+    }
+
+    .block-diamond {
+      background: #4afcff;
+      background-image: radial-gradient(circle at 50% 50%, #ffffff 5px, transparent 5px);
+    }
+
+    .block-redstone {
+      background: #ff3333;
+      background-image: linear-gradient(to right, #aa0000 2px, transparent 2px);
+    }
+
+    .block-lapis {
+      background: #0066ff;
+      background-image: radial-gradient(circle at 30% 30%, #66aaff 2px, transparent 2px),
+                  radial-gradient(circle at 70% 60%, #66aaff 2px, transparent 2px);
+    }
+
+    .block-emerald {
+      background: #50c878;
+    }
+
+    .block-name {
+      font-size: 8px;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+      margin-top: 8px;
+    }
+
+    .block-count {
+      background: #3d3d3d;
+      color: #fff;
+      font-size: 8px;
+      padding: 2px 6px;
+      display: inline-block;
+      margin-top: 4px;
+    }
+
+    .crafting-area {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .crafting-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 50px);
+      gap: 5px;
+    }
+
+    .craft-slot {
+      width: 50px;
+      height: 50px;
+      background: #4a4a4a;
+      border: 3px solid #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .craft-slot-small {
+      width: 30px;
+      height: 30px;
+      font-size: 6px;
+    }
+
+    .arrow {
+      font-size: 24px;
+      color: #fff;
+      align-self: center;
+    }
+
+    .result-slot {
+      width: 80px;
+      height: 80px;
+      background: #4a4a4a;
+      border: 4px solid #ffd700;
+    }
+
+    .character-display {
+      margin: 40px 0;
+      text-align: center;
+    }
+
+    .steve {
+      width: 120px;
+      height: 180px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .steve-head {
+      width: 60px;
+      height: 60px;
+      background: #8b6914;
+      margin: 0 auto;
+      border: 4px solid #4a3510;
+    }
+
+    .steve-body {
+      width: 60px;
+      height: 70px;
+      background: #4aaf6a;
+      margin: -4px auto 0;
+      border: 4px solid #2a7a4a;
+    }
+
+    .steve-arm {
+      width: 20px;
+      height: 70px;
+      background: #4aaf6a;
+      position: absolute;
+      top: 64px;
+      border: 4px solid #2a7a4a;
+    }
+
+    .steve-arm-left {
+      left: calc(50% - 50px);
+    }
+
+    .steve-arm-right {
+      right: calc(50% - 50px);
+    }
+
+    .steve-leg {
+      width: 25px;
+      height: 45px;
+      background: #3a5a8a;
+      position: absolute;
+      bottom: 0;
+      border: 4px solid #2a3a5a;
+    }
+
+    .steve-leg-left {
+      left: calc(50% - 25px);
+    }
+
+    .steve-leg-right {
+      right: calc(50% - 25px);
+    }
+
+    .mob-section {
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 30px 0;
+    }
+
+    .mob {
+      text-align: center;
+    }
+
+    .mob-sprite {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 10px;
+      position: relative;
+    }
+
+    .creeper-face {
+      background: var(--creeper);
+      border: 4px solid #2a6a24;
+    }
+
+    .creeper-face::before,
+    .creeper-face::after {
+      content: '';
+      position: absolute;
+      background: #333;
+    }
+
+    .creeper-face::before {
+      width: 12px;
+      height: 12px;
+      top: 25px;
+      left: 18px;
+      box-shadow: 32px 0 0 #333;
+    }
+
+    .creeper-face::after {
+      width: 40px;
+      height: 8px;
+      top: 45px;
+      left: 20px;
+    }
+
+    .pig-face {
+      background: var(--pig);
+      border: 4px solid #d68686;
+      border-radius: 20px 20px 0 0;
+    }
+
+    .pig-face::before {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 10px;
+      background: #ffaaaa;
+      top: 35px;
+      left: 22px;
+      border-radius: 50%;
+      box-shadow: 24px 0 0 #ffaaaa;
+    }
+
+    .zombie-face {
+      background: #5a8a5a;
+      border: 4px solid #3a5a3a;
+    }
+
+    .zombie-face::before {
+      content: '';
+      position: absolute;
+      width: 50px;
+      height: 35px;
+      background: #3a6a3a;
+      bottom: 0;
+      left: 15px;
+    }
+
+    .mob-name {
+      font-size: 10px;
+      color: #fff;
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px;
+      color: #fff;
+      font-size: 8px;
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .loading {
+      animation: pulse 1s infinite;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 20px; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .crafting-area { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>MINECRAFT</h1>
+      <p class="subtitle">BLOCKY WORLD</p>
+    </header>
+
+    <section class="pixel-box">
+      <span class="pixel-box-title">🎒 物品栏</span>
+      <div class="grid" id="inventory">
+        <div class="block-item">
+          <div class="block-icon block-grass"></div>
+          <div class="block-name">草地</div>
+          <div class="block-count">64</div>
+        </div>
+        <div class="block-item">
+          <div class="block-icon block-dirt"></div>
+          <div class="block-name">泥土</div>
+          <div class="block-count">64</div>
+        </div>
+        <div class="block-item">
+          <div class="block-icon block-stone"></div>
+          <div class="block-name">石头</div>
+          <div class="block-count">32</div>
+        </div>
+        <div class="block-item">
+          <div class="block-icon block-wood"></div>
+          <div class="block-name">橡木</div>
+          <div class="block-count">64</div>
+        </div>
+        <div class="block-item">
+          <div class="block-icon block-coal"></div>
+          <div class="block-name">煤炭</div>
+          <div class="block-count">48</div>
+        </div>
+        <div class="block-item">
+          <div class="block-icon block-iron"></div>
+          <div class="block-name">铁锭</div>
+          <div class="block-count">24</div>
+        </div>
+        <div class="block-item">
+          <div class="block-icon block-gold"></div>
+          <div class="block-name">金锭</div>
+          <div class="block-count">12</div>
+        </div>
+        <div class="block-item">
+          <div class="block-icon block-diamond"></div>
+          <div class="block-name">钻石</div>
+          <div class="block-count">8</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pixel-box">
+      <span class="pixel-box-title">⚒️ 合成台</span>
+      <div class="crafting-area">
+        <div class="crafting-grid">
+          <div class="craft-slot"></div>
+          <div class="craft-slot"></div>
+          <div class="craft-slot"></div>
+          <div class="craft-slot block-wood" style="border:none;width:44px;height:44px;margin:auto;"></div>
+          <div class="craft-slot block-wood" style="border:none;width:44px;height:44px;margin:auto;"></div>
+          <div class="craft-slot"></div>
+          <div class="craft-slot"></div>
+          <div class="craft-slot block-wood" style="border:none;width:44px;height:44px;margin:auto;"></div>
+          <div class="craft-slot"></div>
+        </div>
+        <span class="arrow">➡️</span>
+        <div class="result-slot">
+          <div class="block-icon block-stone" style="width:70px;height:70px;border:none;">
+            <span style="font-size:8px;color:#fff;text-shadow:1px 1px 0 #000;">工作台</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="character-display">
+      <div class="pixel-box" style="display:inline-block;">
+        <span class="pixel-box-title">👤 玩家</span>
+        <div class="steve">
+          <div class="steve-head"></div>
+          <div class="steve-body"></div>
+          <div class="steve-arm steve-arm-left"></div>
+          <div class="steve-arm steve-arm-right"></div>
+          <div class="steve-leg steve-leg-left"></div>
+          <div class="steve-leg steve-leg-right"></div>
+        </div>
+        <div style="margin-top:15px;font-size:10px;color:#fff;text-shadow:2px 2px 0 #000;">Steve</div>
+      </div>
+    </section>
+
+    <section class="pixel-box">
+      <span class="pixel-box-title">🧟 生物</span>
+      <div class="mob-section">
+        <div class="mob">
+          <div class="mob-sprite creeper-face"></div>
+          <div class="mob-name">苦力怕</div>
+        </div>
+        <div class="mob">
+          <div class="mob-sprite pig-face"></div>
+          <div class="mob-name">猪</div>
+        </div>
+        <div class="mob">
+          <div class="mob-sprite zombie-face"></div>
+          <div class="mob-name">僵尸</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p class="floating">🎮 Made with ❤️ in Blocky World 🎮</p>
+      <p style="margin-top:10px;">#include &lt;stone.h&gt;</p>
+    </footer>
+  </div>
+
+  <script>
+    // Minecraft style interaction
+    document.querySelectorAll('.block-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const countEl = item.querySelector('.block-count');
+        if (countEl) {
+          let count = parseInt(countEl.textContent);
+          if (count > 0) {
+            count--;
+            countEl.textContent = count;
+            if (count === 0) {
+              item.style.opacity = '0.5';
+              item.style.pointerEvents = 'none';
+            }
+          }
+        }
+      });
+    });
+
+    // Sound effect (optional)
+    const playSound = () => {
+      console.log('*click*');
+    };
+
+    document.querySelectorAll('.craft-slot').forEach(slot => {
+      slot.addEventListener('click', playSound);
+    });
+  </script>
+</body>
+</html>

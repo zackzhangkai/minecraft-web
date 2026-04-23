@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minecraft 风格网站</title>
+  <title>Minecraft 小游戏</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     * {
@@ -13,189 +13,91 @@
     }
 
     :root {
-      --grass-dark: #3a7d44;
-      --grass-light: #5ab964;
+      --grass: #5ab964;
+      --grass-side: #3a7d44;
       --dirt: #8b6914;
       --stone: #787878;
+      --cobble: #5a5a5a;
       --wood: #6d4c2f;
-      --wood-light: #8b6d4f;
+      --leaves: #4a8a3a;
       --sky: #87CEEB;
-      --cloud: #ffffff;
-      --pig: #f5a6a6;
-      --creeper: #64c144;
-      --zombie: #4aaf6a;
+      --coal: #4a4a4a;
+      --iron: #c0c0c0;
+      --gold: #ffd700;
+      --diamond: #4afcff;
+      --redstone: #ff3333;
     }
 
     body {
-      font-family: 'Press Start 2P', cursive, monospace;
-      background: linear-gradient(to bottom, var(--sky) 0%, var(--sky) 50%, var(--grass-light) 50%, var(--grass-dark) 100%);
+      font-family: 'Press Start 2P', cursive;
+      background: var(--sky);
       min-height: 100vh;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    header {
-      text-align: center;
-      padding: 40px 0;
-    }
-
-    h1 {
-      font-size: 32px;
-      color: #fff;
-      text-shadow: 4px 4px 0 #333, -2px -2px 0 #888;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      font-size: 12px;
-      color: #ffd700;
-      text-shadow: 2px 2px 0 #333;
-    }
-
-    .pixel-box {
-      background: linear-gradient(135deg, #8b8b8b 0%, #6b6b6b 50%, #5b5b5b 100%);
-      border: 4px solid #3d3d3d;
-      padding: 20px;
-      margin: 20px 0;
-      box-shadow: 8px 8px 0 rgba(0,0,0,0.4);
-    }
-
-    .pixel-box-title {
-      background: #5c5c5c;
-      color: #fff;
-      padding: 10px 20px;
-      font-size: 14px;
-      display: inline-block;
-      margin: -30px 0 20px -20px;
-      border: 4px solid #3d3d3d;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 15px;
-      margin: 20px 0;
-    }
-
-    .block-item {
-      background: linear-gradient(135deg, #8b8b8b 0%, #6b6b6b 100%);
-      border: 4px solid #3d3d3d;
-      padding: 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-
-    .block-item:hover {
-      transform: translateY(-4px);
-    }
-
-    .block-item:active {
-      transform: translateY(0);
-    }
-
-    .block-icon {
-      width: 60px;
-      height: 60px;
-      margin: 0 auto 10px;
-      border: 2px solid #3d3d3d;
+    /* loading screen */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(to bottom, #000 0%, #1a1a2e 100%);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
-      color: #333;
+      z-index: 1000;
+      transition: opacity 0.5s;
     }
 
-    .block-grass {
-      background: linear-gradient(to bottom, var(--grass-light) 0%, var(--grass-light) 25%, var(--dirt) 25%, var(--dirt) 100%);
+    #loading.done {
+      opacity: 0;
+      pointer-events: none;
     }
 
-    .block-dirt {
-      background: var(--dirt);
-    }
-
-    .block-stone {
-      background: var(--stone);
-      background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, #686868 10px, #686868 20px);
-    }
-
-    .block-wood {
-      background: linear-gradient(to right, var(--wood) 0%, var(--wood-light) 50%, var(--wood) 100%);
-    }
-
-    .block-coal {
-      background: #4a4a4a;
-      background-image: radial-gradient(circle at 30% 30%, #6a6a6a 2px, transparent 2px),
-                  radial-gradient(circle at 70% 60%, #6a6a6a 3px, transparent 3px),
-                  radial-gradient(circle at 50% 80%, #6a6a6a 2px, transparent 2px);
-    }
-
-    .block-iron {
-      background: #c0c0c0;
-      background-image: radial-gradient(circle at 30% 30%, #e8e8e8 3px, transparent 3px),
-                  radial-gradient(circle at 60% 50%, #e8e8e8 2px, transparent 2px);
-    }
-
-    .block-gold {
-      background: #ffd700;
-      background-image: radial-gradient(circle at 40% 40%, #ffec80 4px, transparent 4px);
-    }
-
-    .block-diamond {
-      background: #4afcff;
-      background-image: radial-gradient(circle at 50% 50%, #ffffff 5px, transparent 5px);
-    }
-
-    .block-redstone {
-      background: #ff3333;
-      background-image: linear-gradient(to right, #aa0000 2px, transparent 2px);
-    }
-
-    .block-lapis {
-      background: #0066ff;
-      background-image: radial-gradient(circle at 30% 30%, #66aaff 2px, transparent 2px),
-                  radial-gradient(circle at 70% 60%, #66aaff 2px, transparent 2px);
-    }
-
-    .block-emerald {
-      background: #50c878;
-    }
-
-    .block-name {
-      font-size: 8px;
+    #loading h1 {
       color: #fff;
-      text-shadow: 1px 1px 0 #000;
-      margin-top: 8px;
+      font-size: 24px;
+      text-shadow: 3px 3px 0 #222;
+      margin-bottom: 30px;
     }
 
-    .block-count {
-      background: #3d3d3d;
-      color: #fff;
-      font-size: 8px;
-      padding: 2px 6px;
-      display: inline-block;
-      margin-top: 4px;
+    .loading-bar {
+      width: 200px;
+      height: 20px;
+      background: #333;
+      border: 3px solid #555;
     }
 
-    .crafting-area {
+    .loading-progress {
+      height: 100%;
+      background: #5ab964;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* game container */
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* hotbar */
+    #hotbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .crafting-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 50px);
       gap: 5px;
+      background: rgba(0,0,0,0.5);
+      padding: 8px;
+      border-radius: 5px;
+      border: 3px solid #333;
+      z-index: 100;
     }
 
-    .craft-slot {
+    .hotbar-slot {
       width: 50px;
       height: 50px;
       background: #4a4a4a;
@@ -203,349 +105,760 @@
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .craft-slot-small {
-      width: 30px;
-      height: 30px;
-      font-size: 6px;
-    }
-
-    .arrow {
-      font-size: 24px;
-      color: #fff;
-      align-self: center;
-    }
-
-    .result-slot {
-      width: 80px;
-      height: 80px;
-      background: #4a4a4a;
-      border: 4px solid #ffd700;
-    }
-
-    .character-display {
-      margin: 40px 0;
-      text-align: center;
-    }
-
-    .steve {
-      width: 120px;
-      height: 180px;
-      margin: 0 auto;
+      cursor: pointer;
       position: relative;
     }
 
-    .steve-head {
-      width: 60px;
+    .hotbar-slot.selected {
+      border-color: #fff;
+      box-shadow: 0 0 10px #fff;
+    }
+
+    .hotbar-slot .count {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 8px;
+      color: #fff;
+    }
+
+    .hotbar-slot .block-icon {
+      width: 30px;
+      height: 30px;
+    }
+
+    /* crosshair */
+    #crosshair {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    #crosshair::before,
+    #crosshair::after {
+      content: '';
+      position: absolute;
+      background: #fff;
+    }
+
+    #crosshair::before {
+      width: 2px;
+      height: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #crosshair::after {
+      width: 100%;
+      height: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    /* world */
+    #world {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 3000px;
+      height: 400px;
+      background: linear-gradient(to bottom, var(--sky) 0%, var(--sky) 60%, var(--grass) 60%);
+    }
+
+    .chunk {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+    }
+
+    /* blocks */
+    .block {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border: 2px solid rgba(0,0,0,0.3);
+    }
+
+    .block-grass {
+      background: var(--grass);
+    }
+    .block-grass::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 15px;
+      background: var(--grass-side);
+    }
+
+    .block-dirt { background: var(--dirt); }
+    .block-stone { background: var(--stone); }
+    .block-cobble {
+      background: var(--cobble);
+      background-image: radial-gradient(circle at 30% 30%, #6a6a6a 3px, transparent 3px);
+    }
+    .block-wood {
+      background: var(--wood);
+      background-image: linear-gradient(90deg, #5a3a1f 50%, transparent 50%);
+    }
+    .block-leaves {
+      background: var(--leaves);
+      opacity: 0.9;
+    }
+    .block-coal { background: var(--coal); }
+    .block-iron { background: var(--iron); }
+    .block-gold { background: var(--gold); }
+    .block-diamond { background: var(--diamond); }
+    .block-redstone { background: var(--redstone); }
+    .block-water {
+      background: #3399ff;
+      opacity: 0.7;
+    }
+    .block-lava {
+      background: #ff6600;
+      animation: lava-glow 1s infinite;
+    }
+
+    @keyframes lava-glow {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; }
+    }
+
+    /* player */
+    #player {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
       height: 60px;
+      z-index: 50;
+    }
+
+    .player-head {
+      width: 20px;
+      height: 20px;
       background: #8b6914;
       margin: 0 auto;
-      border: 4px solid #4a3510;
+      border: 2px solid #5a4010;
     }
 
-    .steve-body {
-      width: 60px;
-      height: 70px;
-      background: #4aaf6a;
-      margin: -4px auto 0;
-      border: 4px solid #2a7a4a;
-    }
-
-    .steve-arm {
+    .player-body {
       width: 20px;
-      height: 70px;
+      height: 25px;
+      background: #4aaf6a;
+      margin: -2px auto 0;
+      border: 2px solid #2a7a4a;
+    }
+
+    .player-arm {
+      width: 8px;
+      height: 25px;
       background: #4aaf6a;
       position: absolute;
-      top: 64px;
-      border: 4px solid #2a7a4a;
+      top: 20px;
+      border: 2px solid #2a7a4a;
     }
 
-    .steve-arm-left {
-      left: calc(50% - 50px);
-    }
+    .player-arm.left { left: -8px; }
+    .player-arm.right { right: -8px; }
 
-    .steve-arm-right {
-      right: calc(50% - 50px);
-    }
-
-    .steve-leg {
-      width: 25px;
-      height: 45px;
+    .player-leg {
+      width: 8px;
+      height: 20px;
       background: #3a5a8a;
       position: absolute;
       bottom: 0;
-      border: 4px solid #2a3a5a;
+      border: 2px solid #2a3a5a;
     }
 
-    .steve-leg-left {
-      left: calc(50% - 25px);
-    }
+    .player-leg.left { left: 2px; }
+    .player-leg.right { right: 2px; }
 
-    .steve-leg-right {
-      right: calc(50% - 25px);
-    }
-
-    .mob-section {
-      display: flex;
-      gap: 30px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 30px 0;
-    }
-
+    /* mobs */
     .mob {
-      text-align: center;
-    }
-
-    .mob-sprite {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 10px;
-      position: relative;
-    }
-
-    .creeper-face {
-      background: var(--creeper);
-      border: 4px solid #2a6a24;
-    }
-
-    .creeper-face::before,
-    .creeper-face::after {
-      content: '';
       position: absolute;
-      background: #333;
-    }
-
-    .creeper-face::before {
-      width: 12px;
-      height: 12px;
-      top: 25px;
-      left: 18px;
-      box-shadow: 32px 0 0 #333;
-    }
-
-    .creeper-face::after {
       width: 40px;
-      height: 8px;
-      top: 45px;
-      left: 20px;
+      height: 40px;
+      cursor: pointer;
+      transition: transform 0.2s;
     }
 
-    .pig-face {
-      background: var(--pig);
-      border: 4px solid #d68686;
-      border-radius: 20px 20px 0 0;
+    .mob:hover {
+      transform: scale(1.1);
     }
 
-    .pig-face::before {
-      content: '';
-      position: absolute;
-      width: 12px;
-      height: 10px;
-      background: #ffaaaa;
-      top: 35px;
-      left: 22px;
-      border-radius: 50%;
-      box-shadow: 24px 0 0 #ffaaaa;
+    .mob-pig {
+      background: #f5a6a6;
+      border-radius: 15px 15px 0 0;
     }
 
-    .zombie-face {
-      background: #5a8a5a;
-      border: 4px solid #3a5a3a;
-    }
-
-    .zombie-face::before {
-      content: '';
-      position: absolute;
-      width: 50px;
-      height: 35px;
-      background: #3a6a3a;
-      bottom: 0;
-      left: 15px;
-    }
-
-    .mob-name {
+    .mob-pig::before {
+      content: '👃';
       font-size: 10px;
-      color: #fff;
-      text-shadow: 2px 2px 0 #000;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
 
-    footer {
-      text-align: center;
-      padding: 40px;
+    .mob-sheep {
+      background: #fff;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .mob-cow {
+      background: #8b4513;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .mob-chicken {
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    /* clouds */
+    .cloud {
+      position: absolute;
+      background: #fff;
+      border-radius: 20px;
+      opacity: 0.8;
+    }
+
+    /* UI */
+    #ui {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.6);
+      padding: 15px;
+      border-radius: 5px;
       color: #fff;
+      font-size: 10px;
+      z-index: 100;
+      min-width: 150px;
+    }
+
+    #health {
+      color: #ff3333;
+      margin-bottom: 10px;
+    }
+
+    #food {
+      color: #ffaa00;
+    }
+
+    #inventory-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #4a4a4a;
+      color: #fff;
+      padding: 10px 15px;
+      border: 3px solid #2a2a2a;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 10px;
+      z-index: 100;
+    }
+
+    /* inventory panel */
+    #inventory-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    #inventory-panel.open {
+      display: flex;
+    }
+
+    .inventory-panel-content {
+      background: #c6c6c6;
+      padding: 20px;
+      border: 4px solid #373737;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    .inventory-title {
+      background: #5a5a5a;
+      color: #fff;
+      padding: 10px;
+      margin: -20px -20px 20px -20px;
+      font-size: 12px;
+    }
+
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(9, 50px);
+      gap: 5px;
+    }
+
+    .inv-slot {
+      width: 50px;
+      height: 50px;
+      background: #8a8a8a;
+      border: 3px solid #373737;
+    }
+
+    .inv-slot:hover {
+      border-color: #fff;
+    }
+
+    /* notifications */
+    #notification {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 20px 40px;
+      font-size: 14px;
+      border-radius: 10px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 300;
+    }
+
+    #notification.show {
+      opacity: 1;
+    }
+
+    /* help */
+    #help {
+      position: fixed;
+      bottom: 100px;
+      left: 20px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      padding: 10px;
       font-size: 8px;
-      text-shadow: 2px 2px 0 #000;
+      line-height: 1.8;
     }
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    .floating {
-      animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
-    .loading {
-      animation: pulse 1s infinite;
-    }
-
-    @media (max-width: 600px) {
-      h1 { font-size: 20px; }
-      .grid { grid-template-columns: repeat(2, 1fr); }
-      .crafting-area { flex-direction: column; align-items: center; }
+    /* sound toggle */
+    #sound-toggle {
+      position: fixed;
+      top: 20px;
+      left: 120px;
+      background: #4a4a4a;
+      color: #fff;
+      padding: 10px 15px;
+      border: 3px solid #2a2a2a;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 10px;
+      z-index: 100;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>MINECRAFT</h1>
-      <p class="subtitle">BLOCKY WORLD</p>
-    </header>
-
-    <section class="pixel-box">
-      <span class="pixel-box-title">🎒 物品栏</span>
-      <div class="grid" id="inventory">
-        <div class="block-item">
-          <div class="block-icon block-grass"></div>
-          <div class="block-name">草地</div>
-          <div class="block-count">64</div>
-        </div>
-        <div class="block-item">
-          <div class="block-icon block-dirt"></div>
-          <div class="block-name">泥土</div>
-          <div class="block-count">64</div>
-        </div>
-        <div class="block-item">
-          <div class="block-icon block-stone"></div>
-          <div class="block-name">石头</div>
-          <div class="block-count">32</div>
-        </div>
-        <div class="block-item">
-          <div class="block-icon block-wood"></div>
-          <div class="block-name">橡木</div>
-          <div class="block-count">64</div>
-        </div>
-        <div class="block-item">
-          <div class="block-icon block-coal"></div>
-          <div class="block-name">煤炭</div>
-          <div class="block-count">48</div>
-        </div>
-        <div class="block-item">
-          <div class="block-icon block-iron"></div>
-          <div class="block-name">铁锭</div>
-          <div class="block-count">24</div>
-        </div>
-        <div class="block-item">
-          <div class="block-icon block-gold"></div>
-          <div class="block-name">金锭</div>
-          <div class="block-count">12</div>
-        </div>
-        <div class="block-item">
-          <div class="block-icon block-diamond"></div>
-          <div class="block-name">钻石</div>
-          <div class="block-count">8</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="pixel-box">
-      <span class="pixel-box-title">⚒️ 合成台</span>
-      <div class="crafting-area">
-        <div class="crafting-grid">
-          <div class="craft-slot"></div>
-          <div class="craft-slot"></div>
-          <div class="craft-slot"></div>
-          <div class="craft-slot block-wood" style="border:none;width:44px;height:44px;margin:auto;"></div>
-          <div class="craft-slot block-wood" style="border:none;width:44px;height:44px;margin:auto;"></div>
-          <div class="craft-slot"></div>
-          <div class="craft-slot"></div>
-          <div class="craft-slot block-wood" style="border:none;width:44px;height:44px;margin:auto;"></div>
-          <div class="craft-slot"></div>
-        </div>
-        <span class="arrow">➡️</span>
-        <div class="result-slot">
-          <div class="block-icon block-stone" style="width:70px;height:70px;border:none;">
-            <span style="font-size:8px;color:#fff;text-shadow:1px 1px 0 #000;">工作台</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="character-display">
-      <div class="pixel-box" style="display:inline-block;">
-        <span class="pixel-box-title">👤 玩家</span>
-        <div class="steve">
-          <div class="steve-head"></div>
-          <div class="steve-body"></div>
-          <div class="steve-arm steve-arm-left"></div>
-          <div class="steve-arm steve-arm-right"></div>
-          <div class="steve-leg steve-leg-left"></div>
-          <div class="steve-leg steve-leg-right"></div>
-        </div>
-        <div style="margin-top:15px;font-size:10px;color:#fff;text-shadow:2px 2px 0 #000;">Steve</div>
-      </div>
-    </section>
-
-    <section class="pixel-box">
-      <span class="pixel-box-title">🧟 生物</span>
-      <div class="mob-section">
-        <div class="mob">
-          <div class="mob-sprite creeper-face"></div>
-          <div class="mob-name">苦力怕</div>
-        </div>
-        <div class="mob">
-          <div class="mob-sprite pig-face"></div>
-          <div class="mob-name">猪</div>
-        </div>
-        <div class="mob">
-          <div class="mob-sprite zombie-face"></div>
-          <div class="mob-name">僵尸</div>
-        </div>
-      </div>
-    </section>
-
-    <footer>
-      <p class="floating">🎮 Made with ❤️ in Blocky World 🎮</p>
-      <p style="margin-top:10px;">#include &lt;stone.h&gt;</p>
-    </footer>
+  <!-- Loading -->
+  <div id="loading">
+    <h1>MINECRAFT</h1>
+    <div class="loading-bar">
+      <div class="loading-progress" id="progress"></div>
+    </div>
   </div>
 
-  <script>
-    // Minecraft style interaction
-    document.querySelectorAll('.block-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const countEl = item.querySelector('.block-count');
-        if (countEl) {
-          let count = parseInt(countEl.textContent);
-          if (count > 0) {
-            count--;
-            countEl.textContent = count;
-            if (count === 0) {
-              item.style.opacity = '0.5';
-              item.style.pointerEvents = 'none';
-            }
-          }
-        }
-      });
-    });
+  <!-- Game -->
+  <div id="game">
+    <div id="world"></div>
+    <div id="player">
+      <div class="player-head"></div>
+      <div class="player-body"></div>
+      <div class="player-arm left"></div>
+      <div class="player-arm right"></div>
+      <div class="player-leg left"></div>
+      <div class="player-leg right"></div>
+    </div>
+  </div>
 
-    // Sound effect (optional)
-    const playSound = () => {
-      console.log('*click*');
+  <!-- Crosshair -->
+  <div id="crosshair"></div>
+
+  <!-- UI -->
+  <div id="ui">
+    <div id="health">❤️ 20/20</div>
+    <div id="food">🍖 20/20</div>
+  </div>
+
+  <button id="inventory-btn">🎒 物品栏 [E]</button>
+  <button id="sound-toggle">🔊 声音</button>
+
+  <!-- Hotbar -->
+  <div id="hotbar"></div>
+
+  <!-- Help -->
+  <div id="help">
+    WASD / 箭头 - 移动<br>
+    左键 - 破坏 / 攻击<br>
+    右键 - 放置方块<br>
+    1-9 - 选择物品<br>
+    E - 物品栏
+  </div>
+
+  <!-- Inventory Panel -->
+  <div id="inventory-panel">
+    <div class="inventory-panel-content">
+      <div class="inventory-title">🎒 物品栏</div>
+      <div class="inventory-grid" id="inv-grid"></div>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <div id="notification"></div>
+
+  <script>
+    // Game state
+    const state = {
+      selectedSlot: 0,
+      health: 20,
+      food: 20,
+      position: { x: 0 },
+      inventory: {
+        grass: 64,
+        dirt: 64,
+        stone: 32,
+        cobble: 16,
+        wood: 32,
+        leaves: 16,
+        coal: 24,
+        iron: 12,
+        gold: 6,
+        diamond: 4,
+        redstone: 16,
+        wood_sword: 1,
+        pickaxe: 1,
+        axe: 1
+      },
+      placedBlocks: [],
+      sound: true
     };
 
-    document.querySelectorAll('.craft-slot').forEach(slot => {
-      slot.addEventListener('click', playSound);
+    const blockTypes = [
+      { id: 'grass', name: '草地', icon: 'block-grass' },
+      { id: 'dirt', name: '泥土', icon: 'block-dirt' },
+      { id: 'stone', name: '石头', icon: 'block-stone' },
+      { id: 'cobble', name: '圆石', icon: 'block-cobble' },
+      { id: 'wood', name: '木头', icon: 'block-wood' },
+      { id: 'leaves', name: '树叶', icon: 'block-leaves' },
+      { id: 'coal', name: '煤炭', icon: 'block-coal' },
+      { id: 'iron', name: '铁锭', icon: 'block-iron' },
+      { id: 'gold', name: '金锭', icon: 'block-gold' },
+      { id: 'diamond', name: '钻石', icon: 'block-diamond' },
+      { id: 'redstone', name: '红石', icon: 'block-redstone' }
+    ];
+
+    // Simple block types for hotbar
+    const hotbarBlocks = blockTypes.slice(0, 9);
+
+    // Initialize hotbar
+    function initHotbar() {
+      const hotbar = document.getElementById('hotbar');
+      hotbarBlocks.forEach((block, i) => {
+        const slot = document.createElement('div');
+        slot.className = 'hotbar-slot' + (i === 0 ? ' selected' : '');
+        slot.innerHTML = `
+          <div class="block-icon ${block.icon}"></div>
+          <span class="count">${state.inventory[block.id] || 0}</span>
+        `;
+        slot.onclick = () => selectSlot(i);
+        slot.dataset.block = block.id;
+        hotbar.appendChild(slot);
+      });
+    }
+
+    function selectSlot(index) {
+      state.selectedSlot = index;
+      document.querySelectorAll('.hotbar-slot').forEach((slot, i) => {
+        slot.classList.toggle('selected', i === index);
+      });
+    }
+
+    // Generate world
+    function generateWorld() {
+      const world = document.getElementById('world');
+      const blocks = [];
+
+      // Ground layers
+      for (let x = 0; x < 60; x++) {
+        // Grass layer
+        blocks.push({ x: x * 50, y: 350, type: 'grass' });
+
+        // Dirt layer (2 blocks)
+        blocks.push({ x: x * 50, y: 300, type: 'dirt' });
+        blocks.push({ x: x * 50, y: 250, type: 'dirt' });
+
+        // Stone layer
+        blocks.push({ x: x * 50, y: 200, type: 'stone' });
+        blocks.push({ x: x * 50, y: 150, type: 'stone' });
+        blocks.push({ x: x * 50, y: 100, type: 'stone' });
+
+        // Cave ore generation
+        if (Math.random() < 0.1) {
+          blocks.push({ x: x * 50, y: 100, type: 'coal' });
+        }
+        if (Math.random() < 0.05) {
+          blocks.push({ x: x * 50, y: 100, type: 'iron' });
+        }
+        if (Math.random() < 0.02) {
+          blocks.push({ x: x * 50, y: 100, type: 'diamond' });
+        }
+      }
+
+      // Trees
+      const treePositions = [5, 15, 25, 35, 50];
+      treePositions.forEach(tx => {
+        // Tree trunk
+        for (let h = 0; h < 4; h++) {
+          blocks.push({ x: tx * 50, y: 350 - (h + 1) * 50, type: 'wood' });
+        }
+        // Leaves
+        for (let lx = -1; lx <= 1; lx++) {
+          for (let ly = 0; ly <= 1; ly++) {
+            blocks.push({ x: (tx + lx) * 50, y: 350 - (4 + ly) * 50, type: 'leaves' });
+          }
+        }
+        blocks.push({ x: tx * 50, y: 350 - 5 * 50, type: 'leaves' });
+      });
+
+      // Clouds
+      for (let i = 0; i < 8; i++) {
+        const cloud = document.createElement('div');
+        cloud.className = 'cloud';
+        cloud.style.left = (Math.random() * 2000) + 'px';
+        cloud.style.top = (50 + Math.random() * 100) + 'px';
+        cloud.style.width = (80 + Math.random() * 100) + 'px';
+        cloud.style.height = (30 + Math.random() * 20) + 'px';
+        world.appendChild(cloud);
+      }
+
+      // Spawn mobs
+      const mobTypes = ['mob-pig', 'mob-sheep', 'mob-cow'];
+      const mobNames = ['猪', '羊', '牛'];
+      for (let i = 0; i < 5; i++) {
+        const mob = document.createElement('div');
+        const type = Math.floor(Math.random() * mobTypes.length);
+        mob.className = 'mob ' + mobTypes[type];
+        mob.style.left = (200 + i * 300) + 'px';
+        mob.style.bottom = '100px';
+        mob.textContent = mobNames[type];
+        mob.title = '点击喂食';
+        mob.onclick = () => {
+          feedMob(mob);
+        };
+        world.appendChild(mob);
+      }
+
+      // Render blocks
+      blocks.forEach(b => {
+        const el = document.createElement('div');
+        el.className = `block block-${b.type}`;
+        el.style.left = b.x + 'px';
+        el.style.bottom = b.y + 'px';
+        el.dataset.type = b.type;
+        el.dataset.x = b.x;
+        el.dataset.y = b.y;
+        world.appendChild(el);
+      });
+    }
+
+    // Simple sound generator
+    function playSound(type) {
+      if (!state.sound) return;
+
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      const sounds = {
+        break: { freq: 200, dur: 0.1 },
+        place: { freq: 300, dur: 0.15 },
+        walk: { freq: 100, dur: 0.05 },
+        hit: { freq: 150, dur: 0.1 },
+        eat: { freq: 400, dur: 0.2 }
+      };
+
+      const s = sounds[type] || sounds.place;
+      osc.frequency.value = s.freq;
+      osc.type = 'square';
+
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + s.dur);
+
+      osc.start();
+      osc.stop(ctx.currentTime + s.dur);
+    }
+
+    // Feed mob
+    function feedMob(mob) {
+      showNotification('🐄  yummy!');
+      playSound('eat');
+      state.food = Math.min(20, state.food + 2);
+      updateUI();
+    }
+
+    // Show notification
+    function showNotification(text) {
+      const notif = document.getElementById('notification');
+      notif.textContent = text;
+      notif.classList.add('show');
+      setTimeout(() => notif.classList.remove('show'), 1500);
+    }
+
+    // Update UI
+    function updateUI() {
+      document.getElementById('health').textContent = '❤️ ' + state.health + '/20';
+      document.getElementById('food').textContent = '🍖 ' + state.food + '/20';
+
+      document.querySelectorAll('.hotbar-slot').forEach((slot, i) => {
+        const block = hotbarBlocks[i];
+        const count = state.inventory[block.id] || 0;
+        slot.querySelector('.count').textContent = count;
+      });
+    }
+
+    // Player movement
+    let keys = {};
+    let worldX = 0;
+
+    document.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+
+      if (e.key >= '1' && e.key <= '9') {
+        selectSlot(parseInt(e.key) - 1);
+      }
+
+      if (e.key.toLowerCase() === 'e') {
+        document.getElementById('inventory-panel').classList.toggle('open');
+      }
     });
+
+    document.addEventListener('keyup', e => {
+      keys[e.key.toLowerCase()] = false;
+    });
+
+    function gameLoop() {
+      const player = document.getElementById('player');
+      const speed = 3;
+
+      if (keys['a'] || keys['arrowleft']) {
+        worldX = Math.max(0, worldX - speed);
+        player.style.transform = 'translateX(-50%) scaleX(-1)';
+      }
+      if (keys['d'] || keys['arrowright']) {
+        worldX = Math.min(2500, worldX + speed);
+        player.style.transform = 'translateX(-50%)';
+      }
+
+      document.getElementById('world').style.transform = `translateX(${-worldX}px)`;
+
+      // Auto hunger
+      if (state.food > 0) {
+        state.food = Math.max(0, state.food - 0.01);
+      }
+
+      updateUI();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Click handling - break/place blocks
+    document.getElementById('game').addEventListener('click', e => {
+      if (e.target.classList.contains('block')) {
+        const type = e.target.dataset.type;
+        state.inventory[type] = (state.inventory[type] || 0) + 1;
+        e.target.remove();
+        playSound('break');
+        showNotification('获得 ' + type);
+        updateUI();
+      }
+    });
+
+    // Right click to place
+    document.getElementById('game').addEventListener('contextmenu', e => {
+      e.preventDefault();
+
+      const block = hotbarBlocks[state.selectedSlot];
+      if (state.inventory[block.id] > 0) {
+        const rect = document.getElementById('game').getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left + worldX) / 50) * 50;
+        const y = Math.floor((rect.height - e.clientY + rect.top) / 50) * 50;
+
+        if (y > 50 && x > 0) {
+          const el = document.createElement('div');
+          el.className = `block block-${block.id}`;
+          el.style.left = x + 'px';
+          el.style.bottom = y + 'px';
+          el.dataset.type = block.id;
+          el.dataset.x = x;
+          el.dataset.y = y;
+
+          document.getElementById('world').appendChild(el);
+          state.inventory[block.id]--;
+          playSound('place');
+          updateUI();
+        }
+      }
+    });
+
+    // Inventory panel close
+    document.getElementById('inventory-panel').addEventListener('click', e => {
+      if (e.target.id === 'inventory-panel') {
+        e.target.classList.remove('open');
+      }
+    });
+
+    // Inventory button
+    document.getElementById('inventory-btn').onclick = () => {
+      document.getElementById('inventory-panel').classList.toggle('open');
+    };
+
+    // Sound toggle
+    document.getElementById('sound-toggle').onclick = () => {
+      state.sound = !state.sound;
+      document.getElementById('sound-toggle').textContent = state.sound ? '🔊 声音' : '🔇 静音';
+    };
+
+    // Initialize
+    function init() {
+      const progress = document.getElementById('progress');
+      let p = 0;
+
+      const interval = setInterval(() => {
+        p += 10;
+        progress.style.width = p + '%';
+
+        if (p >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            document.getElementById('loading').classList.add('done');
+            generateWorld();
+            initHotbar();
+            updateUI();
+            gameLoop();
+          }, 500);
+        }
+      }, 100);
+    }
+
+    init();
   </script>
 </body>
 </html>
